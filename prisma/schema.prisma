@@ -36,7 +36,10 @@ model Address {
   id Int @id @default(autoincrement())
   user User @relation(fields: [userId], references: [id])
   userId Int 
-  address String @db.VarChar(255)
+  street String @db.VarChar(255)
+  city String @db.VarChar(100)
+  number String @db.VarChar(20)
+  state String @db.VarChar(100)
   role AddressRole @default(Casa)
   isActive Boolean @default(true)
 }
