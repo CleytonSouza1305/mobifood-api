@@ -1,7 +1,6 @@
 import { prisma } from "../database"
 
-class User {
-
+export class User {
   static allUsers = async () => {
      const users = await prisma.user.findMany()
 
