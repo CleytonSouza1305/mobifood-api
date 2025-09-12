@@ -129,4 +129,13 @@ const login: Handler = async (req, res, next) => {
   }
 };
 
-export { getAllUsers, register, login };
+// GET /auth/me
+const me: Handler = async (req, res, next) => {
+  try {
+    res.json(req.user);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export { getAllUsers, register, login, me };
