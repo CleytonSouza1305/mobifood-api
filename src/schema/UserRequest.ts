@@ -14,3 +14,10 @@ export const LoginRequestSchema = z.object({
   email: z.string().email(),
   password: z.string().min(6).max(100),
 })
+
+export const UpdateUserRequestSchema = z.object({
+  username: z.string().min(2).max(100).optional(),
+  email: z.string().email().optional(),
+  phone: z.string().min(10).max(15).optional(),
+  role: roleEnum.optional().default('user'),
+})
