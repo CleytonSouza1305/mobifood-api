@@ -3,12 +3,14 @@ import { User } from "../models/User";
 import {
   CreateUserRequestSchema,
   LoginRequestSchema,
+  UpdateUserRequestSchema,
 } from "../schema/UserRequest";
 import { HttpError } from "../error/HttpError";
 import bcrypt from "bcryptjs";
 import { ZodError } from "zod";
-import jwt from "jsonwebtoken";
+import jwt, { JwtPayload } from "jsonwebtoken";
 import dotenv from "dotenv";
+import { UserRole } from "../generated/prisma";
 dotenv.config();
 
 // GET /auth/users
@@ -109,7 +111,7 @@ const login: Handler = async (req, res, next) => {
     if (error instanceof ZodError) {
       const errorPath = error.issues.map((el) => el.path.join(".")).join(", ");
 
-     if (errorPath.includes("email")) {
+      if (errorPath.includes("email")) {
         res.status(400).json({ message: "Email inválido." });
         return;
       } else if (errorPath.includes("password")) {
@@ -141,7 +143,9 @@ const me: Handler = async (req, res, next) => {
 // GET /auth/users/:id
 const getUserById: Handler = async (req, res, next) => {
   try {
-    const user = await User.findById(Number(req.params.id))
+    const id = Number(req.params.id);
+
+    const user = await User.findById(id);
     if (!user) {
       throw new HttpError(404, "Usuário não encontrado.");
     }
@@ -150,6 +154,36 @@ const getUserById: Handler = async (req, res, next) => {
   } catch (error) {
     next(error);
   }
-}
+};
 
-export { getAllUsers, register, login, me, getUserById };
+// PUT /auth/users/:id
+const updateUserById: Handler = async (req, res, next) => {
+  try {
+    const id = Number(req.params.id);
+    const body = UpdateUserRequestSchema.parse(req.body);
+
+    const existsUser = await User.findById(id);
+    if (!existsUser) {
+      throw new HttpError(404, "Usuário não encontrado.");
+    }
+
+    if (!req.isAutorizated) {
+      throw new HttpError(401, "Usuário não autenticado.");
+    }
+
+    if (!req.user || typeof req.user !== "object" || !("id" in req.user)) {
+      throw new HttpError(401, "Usuário não autenticado.");
+    }
+    const user = req.user as JwtPayload & { id: number; role: string };
+
+    if (+user.id !== id && user.role !== "admin") {
+      throw new HttpError(403, "Acesso negado.");
+    }
+
+    // const updatedUser = await User.updateUser(body, id)
+  } catch (error) {
+    next(error);
+  }
+};
+
+export { getAllUsers, register, login, me, getUserById, updateUserById };
