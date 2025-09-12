@@ -10,8 +10,8 @@ const app = express()
 
 app.use(cors())
 app.use(express.json())
-app.use(errorHandler)
 app.use('/auth', userRouter)
+app.use(errorHandler)
 
 const PORT = process.env.PORT || 1000
 
