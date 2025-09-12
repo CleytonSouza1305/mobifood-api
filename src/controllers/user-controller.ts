@@ -21,7 +21,7 @@ const getAllUsers: Handler = async (req, res, next) => {
   }
 };
 
-// POST /auth/register
+// POST /auth/users/register
 const register: Handler = async (req, res, next) => {
   try {
     const body = CreateUserRequestSchema.parse(req.body);
@@ -81,7 +81,7 @@ const register: Handler = async (req, res, next) => {
   }
 };
 
-// POST /auth/login
+// POST /auth/users/login
 const login: Handler = async (req, res, next) => {
   try {
     const body = LoginRequestSchema.parse(req.body);
@@ -129,7 +129,7 @@ const login: Handler = async (req, res, next) => {
   }
 };
 
-// GET /auth/me
+// GET /auth/users/me
 const me: Handler = async (req, res, next) => {
   try {
     res.json(req.user);
@@ -138,4 +138,18 @@ const me: Handler = async (req, res, next) => {
   }
 };
 
-export { getAllUsers, register, login, me };
+// GET /auth/users/:id
+const getUserById: Handler = async (req, res, next) => {
+  try {
+    const user = await User.findById(Number(req.params.id))
+    if (!user) {
+      throw new HttpError(404, "Usuário não encontrado.");
+    }
+
+    res.json(user);
+  } catch (error) {
+    next(error);
+  }
+}
+
+export { getAllUsers, register, login, me, getUserById };
