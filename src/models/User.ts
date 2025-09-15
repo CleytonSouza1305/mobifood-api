@@ -44,7 +44,7 @@ export class User {
         role: true,
         createdAt: true,
         updatedAt: true,
-        addresses: true
+        addresses: { include: { address: true } }
       }
     })
 
@@ -81,8 +81,11 @@ export class User {
   }
 
   static addressByUserId = async (id: number) => {
-    const address = await prisma.address.findMany({ where : {id}})
-
-    return address
+    const address = await prisma.addressUser.findMany({
+      where: { userId: id },
+      include: { address: true }
+    })
+ 
+    return address.map((add) => add.address)
   }
 }
