@@ -1,8 +1,9 @@
 import express from "express";
 
 const userRouter = express.Router();
-import { getAllUsers, register, login, me, getUserById, updateUserById, deleteUserById, listUserAddresses } from "../controllers/user-controller";
+import { getAllUsers, register, login, me, getUserById, updateUserById, deleteUserById } from "../controllers/user-controller";
 import { authMiddleware } from "../middleware/auth-user";
+import { listUserAddresses } from "../controllers/address-controller";
 
 // USER
 userRouter.get('/users', getAllUsers);
