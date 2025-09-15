@@ -10,7 +10,17 @@ interface UserInfo {
 
 export class User {
   static allUsers = async () => {
-     const users = await prisma.user.findMany()
+     const users = await prisma.user.findMany({
+      select: {
+        id: true,
+        username: true,
+        email: true,
+        phone: true,
+        role: true,
+        createdAt: true,
+        updatedAt: true
+      }
+     })
 
      return users
   }
