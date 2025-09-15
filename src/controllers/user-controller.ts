@@ -10,7 +10,6 @@ import bcrypt from "bcryptjs";
 import { ZodError } from "zod";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import dotenv from "dotenv";
-import { UserRole } from "../generated/prisma";
 dotenv.config();
 
 // GET /auth/users
@@ -180,7 +179,8 @@ const updateUserById: Handler = async (req, res, next) => {
       throw new HttpError(403, "Acesso negado.");
     }
 
-    // const updatedUser = await User.updateUser(body, id)
+    const updatedUser = await User.updateUser(body, id)
+    res.json(updatedUser)
   } catch (error) {
     next(error);
   }

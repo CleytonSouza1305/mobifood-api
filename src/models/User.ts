@@ -2,10 +2,10 @@ import { prisma } from "../database"
 import { UserRole } from "../generated/prisma"
 
 interface UserInfo {
-  email:string,
-  username:string,
-  phone:string,
-  role: UserRole
+  email?:string,
+  username?:string,
+  phone?:string,
+  role?: UserRole
 }
 
 export class User {
