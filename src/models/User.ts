@@ -44,7 +44,9 @@ export class User {
         role: true,
         createdAt: true,
         updatedAt: true,
-        addresses: { include: { address: true } }
+        addresses: {
+          include: { address: true }
+        }
       }
     })
 
@@ -78,14 +80,5 @@ export class User {
     const deletedUser = await prisma.user.delete({ where: { id } })
 
     return deletedUser
-  }
-
-  static addressByUserId = async (id: number) => {
-    const address = await prisma.addressUser.findMany({
-      where: { userId: id },
-      include: { address: true }
-    })
- 
-    return address.map((add) => add.address)
   }
 }
