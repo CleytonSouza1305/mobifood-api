@@ -79,4 +79,10 @@ export class User {
 
     return deletedUser
   }
+
+  static addressByUserId = async (id: number) => {
+    const address = await prisma.address.findMany({ where : {id}})
+
+    return address
+  }
 }

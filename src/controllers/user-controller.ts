@@ -166,10 +166,6 @@ const updateUserById: Handler = async (req, res, next) => {
       throw new HttpError(404, "Usuário não encontrado.");
     }
 
-    if (!req.isAutorizated) {
-      throw new HttpError(401, "Usuário não autenticado.");
-    }
-
     if (!req.user || typeof req.user !== "object" || !("id" in req.user)) {
       throw new HttpError(401, "Usuário não autenticado.");
     }
@@ -179,8 +175,8 @@ const updateUserById: Handler = async (req, res, next) => {
       throw new HttpError(403, "Acesso negado.");
     }
 
-    const updatedUser = await User.updateUser(body, id)
-    res.json(updatedUser)
+    const updatedUser = await User.updateUser(body, id);
+    res.json(updatedUser);
   } catch (error) {
     next(error);
   }
@@ -189,7 +185,7 @@ const updateUserById: Handler = async (req, res, next) => {
 // DELETE /auth/users/:id
 const deleteUserById: Handler = async (req, res, next) => {
   try {
-    const id = Number(req.params.id)
+    const id = Number(req.params.id);
 
     const existsUser = await User.findById(id);
     if (!existsUser) {
@@ -209,11 +205,42 @@ const deleteUserById: Handler = async (req, res, next) => {
       throw new HttpError(403, "Acesso negado.");
     }
 
-    const deletedUser = await User.deleteUser(id)
-    res.json(deletedUser)
+    const deletedUser = await User.deleteUser(id);
+    res.json(deletedUser);
   } catch (error) {
-    next(error)
+    next(error);
   }
-}
+};
 
-export { getAllUsers, register, login, me, getUserById, updateUserById, deleteUserById };
+// GET /auth/users/:id/addresses
+const listUserAddresses: Handler = async (req, res, next) => {
+  const id = Number(req.params.id);
+
+  const existsUser = await User.findById(id);
+  if (!existsUser) {
+    throw new HttpError(404, "Usuário não encontrado.");
+  }
+
+  if (!req.user || typeof req.user !== "object" || !("id" in req.user)) {
+    throw new HttpError(401, "Usuário não autenticado.");
+  }
+  const user = req.user as JwtPayload & { id: number; role: string };
+
+  if (+user.id !== id && user.role !== "admin") {
+    throw new HttpError(403, "Acesso negado.");
+  }
+
+  const addressByUserId = await User.addressByUserId(id)
+  res.json(addressByUserId)
+};
+
+export {
+  getAllUsers,
+  register,
+  login,
+  me,
+  getUserById,
+  updateUserById,
+  deleteUserById,
+  listUserAddresses,
+};
