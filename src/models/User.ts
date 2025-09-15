@@ -73,4 +73,10 @@ export class User {
 
     return updatedUser
   }
+
+  static deleteUser = async (id: number) => {
+    const deletedUser = await prisma.user.delete({ where: { id } })
+
+    return deletedUser
+  }
 }

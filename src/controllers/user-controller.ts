@@ -186,4 +186,34 @@ const updateUserById: Handler = async (req, res, next) => {
   }
 };
 
-export { getAllUsers, register, login, me, getUserById, updateUserById };
+// DELETE /auth/users/:id
+const deleteUserById: Handler = async (req, res, next) => {
+  try {
+    const id = Number(req.params.id)
+
+    const existsUser = await User.findById(id);
+    if (!existsUser) {
+      throw new HttpError(404, "Usuário não encontrado.");
+    }
+
+    if (!req.isAutorizated) {
+      throw new HttpError(401, "Usuário não autenticado.");
+    }
+
+    if (!req.user || typeof req.user !== "object" || !("id" in req.user)) {
+      throw new HttpError(401, "Usuário não autenticado.");
+    }
+    const user = req.user as JwtPayload & { id: number; role: string };
+
+    if (+user.id !== id && user.role !== "admin") {
+      throw new HttpError(403, "Acesso negado.");
+    }
+
+    const deletedUser = await User.deleteUser(id)
+    res.json(deletedUser)
+  } catch (error) {
+    next(error)
+  }
+}
+
+export { getAllUsers, register, login, me, getUserById, updateUserById, deleteUserById };
