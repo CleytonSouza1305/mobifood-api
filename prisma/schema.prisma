@@ -15,15 +15,15 @@ datasource db {
 }
 
 model User {
-  id Int @id @default(autoincrement())
-  username String @db.VarChar(255)
-  email String @db.VarChar(255) @unique
-  password String @db.VarChar(255)
-  phone String @db.VarChar(20)
-  addresses Address[]
-  role UserRole @default(user)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id        Int           @id @default(autoincrement())
+  username  String        @db.VarChar(255)
+  email     String        @db.VarChar(255) @unique
+  password  String
+  phone     String?       @db.VarChar(20)
+  addresses AddressUser[]
+  role      UserRole  @default(user)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 }
 
 enum UserRole {
@@ -33,15 +33,24 @@ enum UserRole {
 }
 
 model Address {
-  id Int @id @default(autoincrement())
-  user User @relation(fields: [userId], references: [id])
-  userId Int 
-  street String @db.VarChar(255)
-  city String @db.VarChar(100)
-  number String @db.VarChar(20)
-  state String @db.VarChar(100)
-  role AddressRole @default(Casa)
-  isActive Boolean @default(true)
+  id       Int         @id @default(autoincrement())
+  street   String      @db.VarChar(255)
+  city     String      @db.VarChar(100)
+  number   String      @db.VarChar(20)
+  state    String      @db.VarChar(100)
+  role     AddressRole @default(Casa)
+  isActive Boolean     @default(true)
+  users AddressUser[]
+}
+model AddressUser {
+  @@map("address_user")
+  userId    Int
+  addressId Int
+
+  user    User    @relation(fields: [userId], references: [id])
+  address Address @relation(fields: [addressId], references: [id])
+
+  @@id([userId, addressId]) 
 }
 
 enum AddressRole {
