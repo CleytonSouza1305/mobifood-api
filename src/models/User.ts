@@ -45,7 +45,11 @@ export class User {
         createdAt: true,
         updatedAt: true,
         addresses: {
-          include: { address: true }
+          select: {
+            address: true,
+            addressId: false,
+            userId: false
+          }
         }
       }
     })
