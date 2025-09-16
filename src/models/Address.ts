@@ -26,7 +26,10 @@ export class Address {
     if (isActive) {
       await prisma.address.updateMany({
         data: { isActive: false },
-        where: { isActive: true }
+        where: { 
+          isActive: true,
+          users: { some: { userId } }
+         }
       })
     }
 
