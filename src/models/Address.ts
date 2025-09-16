@@ -50,4 +50,12 @@ export class Address {
 
     return newAddress
   } 
+
+  static addressById = async (userId: number, addressId: number) => {
+    const address = await prisma.address.findUnique({
+      where: { id: addressId }
+    })
+
+    return address
+  }
 }

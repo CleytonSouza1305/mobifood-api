@@ -85,4 +85,36 @@ const createAddress: Handler = async (req, res, next) => {
   }
 };
 
-export { listUserAddresses, createAddress };
+// GET auth/users/:id/address/:addressId
+const addressById: Handler = async (req, res, next) => {
+  try {
+    const addressId = Number(req.params.addressId)
+    const id = Number(req.params.id)
+
+    const existsUser = await User.findById(id);
+    if (!existsUser) {
+      throw new HttpError(404, "Usuário não encontrado.");
+    }
+
+    if (!req.user || typeof req.user !== "object" || !("id" in req.user)) {
+      throw new HttpError(401, "Usuário não autenticado.");
+    }
+
+    const user = req.user as JwtPayload & { id: number; role: string };
+
+    if (+user.id !== id && user.role !== "admin") {
+      throw new HttpError(403, "Acesso negado.");
+    }
+
+    const address = await Address.addressById(id, addressId)
+    if (!address) {
+      throw new HttpError(404, "Endereço não encontrado.");
+    }
+    
+    res.json(address)
+  } catch (error) {
+    next(error)
+  }
+}
+
+export { listUserAddresses, createAddress, addressById };
