@@ -1,16 +1,16 @@
-import { prisma } from "../database"
-import { UserRole } from "../generated/prisma"
+import { prisma } from "../database";
+import { UserRole } from "../generated/prisma";
 
 interface UserInfo {
-  email?:string,
-  username?:string,
-  phone?:string,
-  role?: UserRole
+  email?: string;
+  username?: string;
+  phone?: string;
+  role?: UserRole;
 }
 
 export class User {
   static allUsers = async () => {
-     const users = await prisma.user.findMany({
+    const users = await prisma.user.findMany({
       select: {
         id: true,
         username: true,
@@ -18,22 +18,22 @@ export class User {
         phone: true,
         role: true,
         createdAt: true,
-        updatedAt: true
-      }
-     })
+        updatedAt: true,
+      },
+    });
 
-     return users
-  }
+    return users;
+  };
 
-  static findByEmail = async (email:string) => {
+  static findByEmail = async (email: string) => {
     const user = await prisma.user.findUnique({
-      where: { email}
-    })
+      where: { email },
+    });
 
-    return user
-  }
+    return user;
+  };
 
-  static findById = async (id:number) => {
+  static findById = async (id: number) => {
     const user = await prisma.user.findUnique({
       where: { id },
       select: {
@@ -48,41 +48,52 @@ export class User {
           select: {
             address: true,
             addressId: false,
-            userId: false
-          }
-        }
-      }
-    })
+            userId: false,
+          },
+        },
+      },
+    });
 
-    return user
-  }
+    if (!user) return null;
 
-  static createUser = async (username:string, email:string, password:string, phone:string, role:UserRole) => {
+    return {
+      ...user,
+      addresses: user.addresses.map((a) => a.address),
+    };
+  };
+
+  static createUser = async (
+    username: string,
+    email: string,
+    password: string,
+    phone: string,
+    role: UserRole
+  ) => {
     const newUser = await prisma.user.create({
       data: {
         username,
         email,
         password,
         phone,
-        role
-      }
-    })
+        role,
+      },
+    });
 
-    return newUser
-  }
+    return newUser;
+  };
 
   static updateUser = async (data: UserInfo, id: number) => {
     const updatedUser = await prisma.user.update({
       data,
-      where: { id }
-    })
+      where: { id },
+    });
 
-    return updatedUser
-  }
+    return updatedUser;
+  };
 
   static deleteUser = async (id: number) => {
-    const deletedUser = await prisma.user.delete({ where: { id } })
+    const deletedUser = await prisma.user.delete({ where: { id } });
 
-    return deletedUser
-  }
+    return deletedUser;
+  };
 }
