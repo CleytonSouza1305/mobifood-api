@@ -51,6 +51,11 @@ const createAddress: Handler = async (req, res, next) => {
     }
 
     const limitAddress = await Address.addressByUserId(id)
+
+    if (limitAddress.length < 1) {
+      body.isActive = true
+    }
+
     if (limitAddress.length >= 5) {
       throw new HttpError(400, "Limite de endereços atingido.");
     }
@@ -73,7 +78,7 @@ const createAddress: Handler = async (req, res, next) => {
       }
 
       if (errorFIeld.includes('number')) {
-        throw new HttpError(400, 'O número da residência é obrigatório / Formato de número errado.')
+        throw new HttpError(400, 'O número da residência é obrigatório / Formato de número inválido.')
       }
 
       if (errorFIeld.includes('state')) {

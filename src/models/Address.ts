@@ -42,10 +42,9 @@ export class Address {
         role,
         isActive,
         users: {
-          create: { userId }
+          create: { userId: userId }
         }
-      },
-      include: { users: true }
+      }
     })
 
     return newAddress
