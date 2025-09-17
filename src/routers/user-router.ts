@@ -3,7 +3,7 @@ import express from "express";
 const userRouter = express.Router();
 import { getAllUsers, register, login, me, getUserById, updateUserById, deleteUserById } from "../controllers/user-controller";
 import { authMiddleware } from "../middleware/auth-user";
-import { listUserAddresses, createAddress, addressById, deleteAddress } from "../controllers/address-controller";
+import { listUserAddresses, createAddress, addressById, deleteAddress, updateAddress } from "../controllers/address-controller";
 
 // USER
 userRouter.get('/users', getAllUsers);
@@ -19,5 +19,6 @@ userRouter.get('/users/:id/addresses',authMiddleware, listUserAddresses);
 userRouter.post('/users/:id/address',authMiddleware, createAddress);
 userRouter.get('/users/:id/address/:addressId',authMiddleware, addressById);
 userRouter.delete('/users/:id/address/:addressId',authMiddleware, deleteAddress);
+userRouter.put('/users/:id/address/:addressId',authMiddleware, updateAddress);
 
 export default userRouter;

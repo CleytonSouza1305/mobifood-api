@@ -7,17 +7,16 @@ interface AddressData {
   number?: string;
   state?: string;
   role?: AddressRole;
-  isActive?: Boolean;
+  isActive?: boolean;
 }
 
 export class Address {
   static addressByUserId = async (userId: number) => {
-    const address = await prisma.addressUser.findMany({
-      where: { userId },
-      include: { address: true },
+    const address = await prisma.address.findMany({
+      where: { userId }
     });
 
-    return address.map((add) => add.address);
+    return address
   };
 
   static createAddress = async (
@@ -34,7 +33,7 @@ export class Address {
         data: { isActive: false },
         where: {
           isActive: true,
-          users: { some: { userId } },
+          user: { id: userId },
         },
       });
     }
@@ -47,10 +46,8 @@ export class Address {
         state,
         role,
         isActive,
-        users: {
-          create: { userId: userId },
-        },
-      },
+        userId
+      }
     });
 
     return newAddress;
@@ -59,15 +56,19 @@ export class Address {
   static addressById = async (addressId: number) => {
     const address = await prisma.address.findUnique({
       where: { id: addressId },
+      include: {
+        user: { select: {
+          id: true,
+          username: true,
+          email: true
+        }}
+      }
     });
 
     return address;
   };
 
   static deleteAddress = async (userId: number, addressId: number) => {
-    await prisma.addressUser.deleteMany({
-      where: { addressId, userId },
-    });
 
     const deletedAddress = await prisma.address.delete({
       where: { id: addressId },
@@ -76,7 +77,7 @@ export class Address {
     if (deletedAddress.isActive) {
       const anotherAddress = await prisma.address.findFirst({
         where: {
-          users: { some: { userId } },
+          user: { id: userId },
         },
       });
 
@@ -90,4 +91,23 @@ export class Address {
 
     return deletedAddress;
   };
+
+  static updateAddress = async (userId: number, addressId: number, data: AddressData) => {
+    if (data.isActive) {
+      await prisma.address.updateMany({
+        data: { isActive: false },
+        where: {
+          isActive: true,
+          user: { id: userId }
+        }
+      })
+    }
+
+    const updatedAddress = await prisma.address.update({
+      where: { id: addressId },
+      data
+    })
+
+    return updatedAddress
+  }
 }
