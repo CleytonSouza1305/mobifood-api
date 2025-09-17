@@ -18,3 +18,12 @@ export const CreateAddressRequestSchema = z.object({
   role: addressRole.optional().default('Casa'),
   isActive: z.boolean().optional()
 })
+
+export const UpdateAddressRequestSchema = z.object({
+  street: z.string().min(2).max(100).optional(),
+  city: z.string().min(2).max(100).optional(),
+  number: z.number().optional(),
+  state: stateSchema.optional(),
+  role: addressRole.optional(),
+  isActive: z.boolean().optional()
+})
