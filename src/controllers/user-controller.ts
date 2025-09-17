@@ -212,6 +212,35 @@ const deleteUserById: Handler = async (req, res, next) => {
   }
 };
 
+// PUT auth/users/:id/changePassword
+const changePassword: Handler = async (req, res, next) => {
+  try {
+    const id = Number(req.params.id);
+
+    const existsUser = await User.findById(id);
+    if (!existsUser) {
+      throw new HttpError(404, "Usuário não encontrado.");
+    }
+
+    if (!req.isAutorizated) {
+      throw new HttpError(401, "Usuário não autenticado.");
+    }
+
+    if (!req.user || typeof req.user !== "object" || !("id" in req.user)) {
+      throw new HttpError(401, "Usuário não autenticado.");
+    }
+    const user = req.user as JwtPayload & { id: number; role: string };
+
+    if (+user.id !== id && user.role !== "admin") {
+      throw new HttpError(403, "Acesso negado.");
+    }
+
+    const body = UpdateUserRequestSchema.parse(req.body)
+
+    // const verifyPassword = bcrypt.compareSync(body.password, user.)
+  } catch (error) {}
+};
+
 export {
   getAllUsers,
   register,
@@ -219,5 +248,6 @@ export {
   me,
   getUserById,
   updateUserById,
-  deleteUserById
+  deleteUserById,
+  changePassword
 };

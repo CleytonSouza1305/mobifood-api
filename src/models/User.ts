@@ -6,6 +6,7 @@ interface UserInfo {
   username?: string;
   phone?: string;
   role?: UserRole;
+  password?: string
 }
 
 export class User {
