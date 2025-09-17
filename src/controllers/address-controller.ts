@@ -217,7 +217,33 @@ const updateAddress: Handler = async (req, res, next) => {
     const updatedAddress = await Address.updateAddress(id, addressId, data)
     res.json(updatedAddress)
   } catch (error) {
-    next(error)
+    if (error instanceof ZodError) {
+      const errorFIeld = error.issues.map((el) => el.path.join(".")).join(", ");
+
+      if (errorFIeld.includes("street")) {
+        throw new HttpError(400, "A rua é obrigatória.");
+      }
+
+      if (errorFIeld.includes("city")) {
+        throw new HttpError(400, "A cidade é obrigatória.");
+      }
+
+      if (errorFIeld.includes("number")) {
+        throw new HttpError(
+          400,
+          "O número da residência é obrigatório / Formato de número inválido."
+        );
+      }
+
+      if (errorFIeld.includes("state")) {
+        throw new HttpError(
+          400,
+          "O estado é obrigatório. Exemplo: 'SP/RJ/BA' "
+        );
+      }
+    } else {
+      next(error);
+    }
   }
 }
 
