@@ -204,11 +204,14 @@ const updateAddress: Handler = async (req, res, next) => {
     }
 
     const body = UpdateAddressRequestSchema.parse(req.body)
+    let addressNumber;
+
+    if (body.number) addressNumber = String(body.number)
     
     const data = {
       street: body.street,
       city: body.city,
-      number: String(body.number),
+      number: addressNumber,
       state: body.state,
       role: body.role,
       isActive: body.isActive
