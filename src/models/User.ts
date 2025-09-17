@@ -44,22 +44,13 @@ export class User {
         role: true,
         createdAt: true,
         updatedAt: true,
-        addresses: {
-          select: {
-            address: true,
-            addressId: false,
-            userId: false,
-          },
-        },
+        address: true
       },
     });
 
     if (!user) return null;
 
-    return {
-      ...user,
-      addresses: user.addresses.map((a) => a.address),
-    };
+    return user
   };
 
   static createUser = async (
