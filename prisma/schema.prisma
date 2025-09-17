@@ -20,8 +20,8 @@ model User {
   email     String        @db.VarChar(255) @unique
   password  String
   phone     String?       @db.VarChar(20)
-  addresses AddressUser[]
   role      UserRole  @default(user)
+  address Address[]
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
 }
@@ -34,23 +34,14 @@ enum UserRole {
 
 model Address {
   id       Int         @id @default(autoincrement())
+  userId Int
+  user User @relation(fields: [userId], references: [id])
   street   String      @db.VarChar(255)
   city     String      @db.VarChar(100)
   number   String      @db.VarChar(20)
   state    String      @db.VarChar(100)
   role     AddressRole @default(Casa)
   isActive Boolean     @default(true)
-  users AddressUser[]
-}
-model AddressUser {
-  @@map("address_user")
-  userId    Int
-  addressId Int
-
-  user    User    @relation(fields: [userId], references: [id])
-  address Address @relation(fields: [addressId], references: [id])
-
-  @@id([userId, addressId]) 
 }
 
 enum AddressRole {
