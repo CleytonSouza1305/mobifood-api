@@ -3,7 +3,7 @@ import { HttpError } from "../error/HttpError";
 import { JwtPayload } from "jsonwebtoken";
 import { Address } from "../models/Address";
 import { User } from "../models/User";
-import { CreateAddressRequestSchema } from "../schema/AddressRequest";
+import { CreateAddressRequestSchema, UpdateAddressRequestSchema } from "../schema/AddressRequest";
 import { ZodError } from "zod";
 
 // GET /auth/users/:id/addresses
@@ -136,6 +136,7 @@ const addressById: Handler = async (req, res, next) => {
   }
 };
 
+// DELETE /auth/users/:id/address/:addressId
 const deleteAddress: Handler = async (req, res, next) => {
   try {
     const addressId = Number(req.params.addressId);
@@ -161,6 +162,10 @@ const deleteAddress: Handler = async (req, res, next) => {
       throw new HttpError(404, "Endereço não encontrado.");
     }
 
+    if (address.userId !== id) {
+      throw new HttpError(400, 'Este endereço não pertence a você.')
+    }
+    
     const deletedAddress = await Address.deleteAddress(id, addressId)
     res.json(deletedAddress)
   } catch (error) {
@@ -168,4 +173,58 @@ const deleteAddress: Handler = async (req, res, next) => {
   }
 };
 
-export { listUserAddresses, createAddress, addressById, deleteAddress };
+// PUT auth/users/:id/address/:addressId
+const updateAddress: Handler = async (req, res, next) => {
+  try {
+    const addressId = Number(req.params.addressId);
+    const id = Number(req.params.id);
+
+    const existsUser = await User.findById(id);
+    if (!existsUser) {
+      throw new HttpError(404, "Usuário não encontrado.");
+    }
+
+    if (!req.user || typeof req.user !== "object" || !("id" in req.user)) {
+      throw new HttpError(401, "Usuário não autenticado.");
+    }
+
+    const user = req.user as JwtPayload & { id: number; role: string };
+
+    if (+user.id !== id && user.role !== "admin") {
+      throw new HttpError(403, "Acesso negado.");
+    }
+
+    const address = await Address.addressById(addressId);
+    if (!address) {
+      throw new HttpError(404, "Endereço não encontrado.");
+    }
+
+    if (address.userId !== id) {
+      throw new HttpError(400, 'Este endereço não pertence a você.')
+    }
+
+    const body = UpdateAddressRequestSchema.parse(req.body)
+    
+    const data = {
+      street: body.street,
+      city: body.city,
+      number: String(body.number),
+      state: body.state,
+      role: body.role,
+      isActive: body.isActive
+    }
+
+    const updatedAddress = await Address.updateAddress(id, addressId, data)
+    res.json(updatedAddress)
+  } catch (error) {
+    next(error)
+  }
+}
+
+export { 
+  listUserAddresses, 
+  createAddress, 
+  addressById, 
+  deleteAddress, 
+  updateAddress 
+};
