@@ -15,15 +15,16 @@ datasource db {
 }
 
 model User {
-  id        Int           @id @default(autoincrement())
-  username  String        @db.VarChar(255)
-  email     String        @db.VarChar(255) @unique
-  password  String
-  phone     String?       @db.VarChar(20)
-  role      UserRole  @default(user)
-  address Address[]
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  id             Int              @id @default(autoincrement())
+  username       String           @db.VarChar(255)
+  email          String           @unique @db.VarChar(255)
+  password       String
+  phone          String?          @db.VarChar(20)
+  role           UserRole         @default(user)
+  address        Address[]
+  paymentMethods PaymentMethods[]
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
 }
 
 enum UserRole {
@@ -34,8 +35,8 @@ enum UserRole {
 
 model Address {
   id       Int         @id @default(autoincrement())
-  userId Int
-  user User @relation(fields: [userId], references: [id])
+  userId   Int
+  user     User        @relation(fields: [userId], references: [id])
   street   String      @db.VarChar(255)
   city     String      @db.VarChar(100)
   number   String      @db.VarChar(20)
@@ -49,4 +50,24 @@ enum AddressRole {
   Trabalho
   Escola
   Outros
+}
+
+model PaymentMethods {
+  id        Int         @id @default(autoincrement())
+  method    PaymentType
+  details   Json? 
+  isDefault Boolean     @default(false)
+  userId    Int
+  user      User        @relation(fields: [userId], references: [id])
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  @@map("payment_methods")
+}
+
+enum PaymentType {
+  CREDIT_CARD
+  DEBIT_CARD
+  PIX
+  PAYPAL
 }
