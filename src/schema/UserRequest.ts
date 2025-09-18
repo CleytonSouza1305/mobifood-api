@@ -18,8 +18,8 @@ export const LoginRequestSchema = z.object({
 export const UpdateUserRequestSchema = z.object({
   username: z.string().min(2).max(100).optional(),
   email: z.string().email().optional(),
-  password: z.string().optional(),
-  newPassword: z.string().optional(),
+  password: z.string().min(6).optional(),
+  newPassword: z.string().min(6).optional(),
   phone: z.string().min(10).max(15).optional(),
   role: roleEnum.optional(),
 })

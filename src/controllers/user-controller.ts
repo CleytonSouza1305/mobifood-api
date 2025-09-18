@@ -10,6 +10,7 @@ import bcrypt from "bcryptjs";
 import { ZodError } from "zod";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import dotenv from "dotenv";
+import { prisma } from "../database";
 dotenv.config();
 
 // GET /auth/users
@@ -236,9 +237,46 @@ const changePassword: Handler = async (req, res, next) => {
     }
 
     const body = UpdateUserRequestSchema.parse(req.body)
+    if (!body.password) {
+      throw new HttpError(400, 'É necessário informar a senha para continuar.')
+    }
 
-    // const verifyPassword = bcrypt.compareSync(body.password, user.)
-  } catch (error) {}
+    if (!body.newPassword) {
+      throw new HttpError(400, 'É necessário informar a nova senha para continuar.')
+    }
+
+    const hashedPassword = await prisma.user.findUnique({ 
+      where: { id },
+      select: { password: true }
+    })
+
+    if (!hashedPassword) {
+      throw new HttpError(500, 'Erro interno, tente novamente mais tarde')
+    }
+
+    const verifyPassword = bcrypt.compareSync(body.password, hashedPassword.password)
+    if (!verifyPassword) {
+      throw new HttpError(400, 'Credenciais inválidas')
+    }
+
+    const newPasswordHashed = bcrypt.hashSync(body.newPassword, 10)
+    const newPassword = await User.updateUser({ password: newPasswordHashed }, id)
+    res.json(newPassword)
+  } catch (error) {
+    if (error instanceof ZodError) {
+      const errorFIeld = error.issues.map((el) => el.path.join(".")).join(", ");
+
+      if (errorFIeld.includes('password')) {
+        throw new HttpError(400, 'Formato de senha inválido, mínimo de 6 caracteres.')
+      }
+
+      if (errorFIeld.includes('newPassword')) {
+        throw new HttpError(400, 'Formato ds novs senha inválido, mínimo de 6 caracteres.')
+      }
+    } else {
+      next(error);
+    }
+  }
 };
 
 export {
