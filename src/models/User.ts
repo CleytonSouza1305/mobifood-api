@@ -45,7 +45,8 @@ export class User {
         role: true,
         createdAt: true,
         updatedAt: true,
-        address: true
+        address: true,
+        paymentMethods: true
       },
     });
 
