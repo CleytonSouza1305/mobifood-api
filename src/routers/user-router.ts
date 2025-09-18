@@ -13,7 +13,7 @@ userRouter.get('/users/me', authMiddleware, me);
 userRouter.get('/users/:id', authMiddleware, getUserById);
 userRouter.put('/users/:id', authMiddleware, updateUserById);
 userRouter.delete('/users/:id', authMiddleware, deleteUserById);
-userRouter.put('/users/:id/changePassword', authMiddleware, changePassword);
+userRouter.put('/users/:id/change-password', authMiddleware, changePassword);
 
 // ADDRESS
 userRouter.get('/users/:id/addresses',authMiddleware, listUserAddresses);
