@@ -8,6 +8,7 @@ export const CreateUserRequestSchema = z.object({
   password: z.string().min(6).max(100),
   phone: z.string().min(10).max(15),
   role: roleEnum.optional().default('user'),
+  favoriteTheme: z.enum(['light', 'dark']).optional()
 });
 
 export const LoginRequestSchema = z.object({
@@ -20,6 +21,7 @@ export const UpdateUserRequestSchema = z.object({
   email: z.string().email().optional(),
   phone: z.string().min(10).max(15).optional(),
   role: roleEnum.optional(),
+  favoriteTheme: z.enum(['light', 'dark']).optional()
 })
 
 export const UpdateUserPasswordRequestSchema = z.object({

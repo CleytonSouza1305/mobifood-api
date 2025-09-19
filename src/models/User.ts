@@ -43,6 +43,7 @@ export class User {
         email: true,
         phone: true,
         role: true,
+        favoriteTheme: true,
         createdAt: true,
         updatedAt: true,
         address: true,

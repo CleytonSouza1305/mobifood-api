@@ -46,41 +46,43 @@ const register: Handler = async (req, res, next) => {
     res.status(201).json(newUser);
   } catch (error) {
     if (error instanceof ZodError) {
-      const errorPath = error.issues.map((el) => el.path.join(".")).join(", ");
+      const errorFIeld = error.issues.map((el) => el.path.join(".")).join(", ");
 
-      if (errorPath.includes("username")) {
-        res.status(400).json({
-          message: "Nome de usuário deve conter no mínimo 3 caracteres.",
-        });
-        return;
-      } else if (errorPath.includes("email")) {
-        res.status(400).json({ message: "Email inválido." });
-        return;
-      } else if (errorPath.includes("password")) {
-        res.status(400).json({
-          message: "Senha inválida. A senha deve ter no mínimo 6 caracteres.",
-        });
-        return;
-      } else if (errorPath.includes("phone")) {
-        res.status(400).json({ message: "Telefone inválido." });
-        return;
-      } else if (errorPath.includes("role")) {
-        res.status(400).json({
-          message:
-            "Função inválida. As funções permitidas são: user, delivery.",
-        });
+      if (errorFIeld.includes("username")) {
+        throw new HttpError(400, "O nome deve conter no mínimo 2 caracteres.");
       }
 
-      res
-        .status(500)
-        .json({ message: `Erro de validação nos campos: ${errorPath}` });
-      return;
-    } else if (error instanceof HttpError) {
-      res.status(error.status).json({ message: error.message });
-      return;
-    }
+      if (errorFIeld.includes("email")) {
+        throw new HttpError(400, "Formato de email inválido.");
+      }
 
-    next(error);
+      if (errorFIeld.includes("password")) {
+        throw new HttpError(400, "A senha deve conter no mínimo 6 caracteres.");
+      }
+
+      if (errorFIeld.includes("phone")) {
+        throw new HttpError(
+          400,
+          "Formato de telefone inválido."
+        );
+      }
+
+      if (errorFIeld.includes("role")) {
+        throw new HttpError(
+          400,
+          "Etiqueta para usuário inválida' "
+        );
+      }
+
+      if (errorFIeld.includes("favoriteTheme")) {
+        throw new HttpError(
+          400,
+          "Tema inválido, só permite ligth e dark."
+        );
+      }
+    } else {
+      next(error);
+    }
   }
 };
 
@@ -107,6 +109,7 @@ const login: Handler = async (req, res, next) => {
     }
 
     const token = jwt.sign(payload, JWT_SECRET, { expiresIn: "7d" });
+    console.log(token);
     res.json({ token });
   } catch (error) {
     if (error instanceof ZodError) {
@@ -177,10 +180,43 @@ const updateUserById: Handler = async (req, res, next) => {
       throw new HttpError(403, "Acesso negado.");
     }
 
-    const updatedUser = await User.updateUser(body, id);
-    res.json(updatedUser);
+    await User.updateUser(body, id);
+    res.json({ message: 'Usuário atualizado com sucesso.' });
   } catch (error) {
-    next(error);
+    if (error instanceof ZodError) {
+      const errorFIeld = error.issues.map((el) => el.path.join(".")).join(", ");
+
+      if (errorFIeld.includes("username")) {
+        throw new HttpError(400, "O nome deve conter no mínimo 2 caracteres.");
+      }
+
+      if (errorFIeld.includes("email")) {
+        throw new HttpError(400, "Formato de email inválido.");
+      }
+
+      if (errorFIeld.includes("phone")) {
+        throw new HttpError(
+          400,
+          "Formato de telefone inválido."
+        );
+      }
+
+      if (errorFIeld.includes("role")) {
+        throw new HttpError(
+          400,
+          "Etiqueta para usuário inválida' "
+        );
+      }
+
+      if (errorFIeld.includes("favoriteTheme")) {
+        throw new HttpError(
+          400,
+          "Tema inválido, só permite ligth e dark."
+        );
+      }
+    } else {
+      next(error);
+    }
   }
 };
 
@@ -207,8 +243,8 @@ const deleteUserById: Handler = async (req, res, next) => {
       throw new HttpError(403, "Acesso negado.");
     }
 
-    const deletedUser = await User.deleteUser(id);
-    res.json(deletedUser);
+    await User.deleteUser(id);
+    res.json({ message: 'Usuário deletado com sucesso.' });
   } catch (error) {
     next(error);
   }
@@ -236,8 +272,6 @@ const changePassword: Handler = async (req, res, next) => {
     if (+user.id !== id && user.role !== "admin") {
       throw new HttpError(403, "Acesso negado.");
     }
-
-    console.log(req.user)
 
     const body = UpdateUserPasswordRequestSchema.parse(req.body);
     if (!body.password) {
@@ -305,5 +339,5 @@ export {
   getUserById,
   updateUserById,
   deleteUserById,
-  changePassword
+  changePassword,
 };
