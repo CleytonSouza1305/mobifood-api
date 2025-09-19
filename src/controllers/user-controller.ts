@@ -237,6 +237,8 @@ const changePassword: Handler = async (req, res, next) => {
       throw new HttpError(403, "Acesso negado.");
     }
 
+    console.log(req.user)
+
     const body = UpdateUserPasswordRequestSchema.parse(req.body);
     if (!body.password) {
       throw new HttpError(400, "É necessário informar a senha para continuar.");

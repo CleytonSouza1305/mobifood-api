@@ -3,7 +3,10 @@ import { HttpError } from "../error/HttpError";
 import { JwtPayload } from "jsonwebtoken";
 import { Address } from "../models/Address";
 import { User } from "../models/User";
-import { CreateAddressRequestSchema, UpdateAddressRequestSchema } from "../schema/AddressRequest";
+import {
+  CreateAddressRequestSchema,
+  UpdateAddressRequestSchema,
+} from "../schema/AddressRequest";
 import { ZodError } from "zod";
 
 // GET /auth/users/:id/addresses
@@ -19,10 +22,8 @@ const listUserAddresses: Handler = async (req, res, next) => {
     throw new HttpError(401, "Usuário não autenticado.");
   }
 
-  const user = req.user as JwtPayload & { id: number; role: string };
-
-  if (+user.id !== id && user.role !== "admin") {
-    throw new HttpError(403, "Acesso negado.");
+  if (req.user.id !== id && req.user.role !== "admin") {
+    throw new HttpError(400, "Operação cancelada.");
   }
 
   const addressByUserId = await Address.addressByUserId(id);
@@ -44,10 +45,8 @@ const createAddress: Handler = async (req, res, next) => {
       throw new HttpError(401, "Usuário não autenticado.");
     }
 
-    const user = req.user as JwtPayload & { id: number; role: string };
-
-    if (+user.id !== id && user.role !== "admin") {
-      throw new HttpError(403, "Acesso negado.");
+    if (req.user.id !== id && req.user.role !== "admin") {
+      throw new HttpError(400, "Operação cancelada.");
     }
 
     const limitAddress = await Address.addressByUserId(id);
@@ -119,15 +118,17 @@ const addressById: Handler = async (req, res, next) => {
       throw new HttpError(401, "Usuário não autenticado.");
     }
 
-    const user = req.user as JwtPayload & { id: number; role: string };
-
-    if (+user.id !== id && user.role !== "admin") {
-      throw new HttpError(403, "Acesso negado.");
+    if (req.user.id !== id && req.user.role !== "admin") {
+      throw new HttpError(400, "Operação cancelada.");
     }
 
     const address = await Address.addressById(addressId);
     if (!address) {
       throw new HttpError(404, "Endereço não encontrado.");
+    }
+
+    if (req.user.role !== "admin" && address.userId !== id) {
+      throw new HttpError(404, "Você não pode acessar esses dados.");
     }
 
     res.json(address);
@@ -163,11 +164,11 @@ const deleteAddress: Handler = async (req, res, next) => {
     }
 
     if (address.userId !== id) {
-      throw new HttpError(400, 'Este endereço não pertence a você.')
+      throw new HttpError(400, "Este endereço não pertence a você.");
     }
-    
-    const deletedAddress = await Address.deleteAddress(id, addressId)
-    res.json(deletedAddress)
+
+    const deletedAddress = await Address.deleteAddress(id, addressId);
+    res.json(deletedAddress);
   } catch (error) {
     next(error);
   }
@@ -200,25 +201,25 @@ const updateAddress: Handler = async (req, res, next) => {
     }
 
     if (address.userId !== id) {
-      throw new HttpError(400, 'Este endereço não pertence a você.')
+      throw new HttpError(400, "Este endereço não pertence a você.");
     }
 
-    const body = UpdateAddressRequestSchema.parse(req.body)
+    const body = UpdateAddressRequestSchema.parse(req.body);
     let addressNumber;
 
-    if (body.number) addressNumber = String(body.number)
-    
+    if (body.number) addressNumber = String(body.number);
+
     const data = {
       street: body.street,
       city: body.city,
       number: addressNumber,
       state: body.state,
       role: body.role,
-      isActive: body.isActive
-    }
+      isActive: body.isActive,
+    };
 
-    const updatedAddress = await Address.updateAddress(id, addressId, data)
-    res.json(updatedAddress)
+    const updatedAddress = await Address.updateAddress(id, addressId, data);
+    res.json(updatedAddress);
   } catch (error) {
     if (error instanceof ZodError) {
       const errorFIeld = error.issues.map((el) => el.path.join(".")).join(", ");
@@ -244,16 +245,24 @@ const updateAddress: Handler = async (req, res, next) => {
           "O estado é obrigatório. Exemplo: 'SP/RJ/BA' "
         );
       }
+
+      if (errorFIeld.includes("role")) {
+        throw new HttpError(
+          400,
+          "Só são permitidas as etiquetas (Casa, Trabalho, Escola, Outros)"
+        );
+      }
+
     } else {
       next(error);
     }
   }
-}
+};
 
-export { 
-  listUserAddresses, 
-  createAddress, 
-  addressById, 
-  deleteAddress, 
-  updateAddress 
+export {
+  listUserAddresses,
+  createAddress,
+  addressById,
+  deleteAddress,
+  updateAddress,
 };
