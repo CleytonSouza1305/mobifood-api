@@ -21,6 +21,7 @@ model User {
   password       String
   phone          String?          @db.VarChar(20)
   role           UserRole         @default(user)
+  favoriteTheme FavoriteTheme @default(light)
   address        Address[]
   paymentMethods PaymentMethods[]
   createdAt      DateTime         @default(now())
@@ -31,6 +32,11 @@ enum UserRole {
   user
   admin
   delivery
+}
+
+enum FavoriteTheme {
+  dark
+  light
 }
 
 model Address {
