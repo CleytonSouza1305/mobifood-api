@@ -9,8 +9,19 @@ interface UserInfo {
   password?: string
 }
 
+export interface userFilter {
+  page: number,
+  pageSize: number,
+  where: {
+    username?: { contains: string, mode: 'insensitive' | 'default' },
+    role?: { equals: UserRole }
+  },
+  sortBy: string,
+  order: 'asc' | 'desc'
+}
+
 export class User {
-  static allUsers = async () => {
+  static allUsers = async (filter: userFilter) => {
     const users = await prisma.user.findMany({
       select: {
         id: true,
@@ -21,9 +32,12 @@ export class User {
         createdAt: true,
         updatedAt: true,
       },
+      where: filter.where
     });
 
-    return users;
+    const total = await prisma.user.count({ where: filter.where });
+
+    return { data: users, total };
   };
 
   static findByEmail = async (email: string) => {

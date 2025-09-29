@@ -1,5 +1,5 @@
 import { Handler } from "express";
-import { User } from "../models/User";
+import { User, userFilter } from "../models/User";
 import {
   CreateUserRequestSchema,
   LoginRequestSchema,
@@ -12,13 +12,43 @@ import { ZodError } from "zod";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import dotenv from "dotenv";
 import { prisma } from "../database";
+import { UserRole } from "../generated/prisma";
 dotenv.config();
 
 // GET /auth/users
 const getAllUsers: Handler = async (req, res, next) => {
   try {
-    const users = await User.allUsers();
-    res.json(users);
+    const { page = 1, limit = 10, username, role, sortBy = "createdAt", order = "asc" } = req.query
+
+    const pageSize = Number(page)
+    const limitSize = Number(limit)
+
+    const filter: userFilter = {
+    page: pageSize,
+    pageSize: limitSize,
+    where: {},
+    sortBy: String(sortBy),
+    order: order === 'desc' ? 'desc' : 'asc'
+  };
+    
+    if (username) filter.where.username = { contains: String(username), mode: 'insensitive' }
+    if (role) filter.where.role = { equals: String(role) as UserRole }
+
+    if (role !== 'user' && role !== 'delivery' && role !== 'admin') {
+      throw new HttpError(400, "Etiqueta para usuário inválida' ");
+    }
+
+    filter.page = pageSize
+    filter.pageSize = limitSize
+    filter.sortBy = String(sortBy)
+
+    const users = await User.allUsers(filter);
+    res.json({
+      data: users.data,
+      page: pageSize,
+      limit: limitSize,
+      total: users.total
+    });
   } catch (error) {
     next(error);
   }
