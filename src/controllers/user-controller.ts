@@ -123,7 +123,7 @@ const login: Handler = async (req, res, next) => {
 
     const user = await User.findByEmail(body.email);
     if (!user) {
-      throw new HttpError(401, "Credenciais inválidas.");
+      throw new HttpError(404, "Usuário não encontrado.");
     }
 
     const isValidPassword = bcrypt.compareSync(body.password, user.password);
