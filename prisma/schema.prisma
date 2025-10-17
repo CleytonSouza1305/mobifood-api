@@ -77,3 +77,57 @@ enum PaymentType {
   PIX
   PAYPAL
 }
+
+model Restaurants {
+  id Int @id @default(autoincrement())
+  name String @db.VarChar(50)
+  category RestaurantCategory @default(OTHERS)
+  local String @db.VarChar(255)
+  openAt String @db.VarChar(10) @default("10:00")
+  closeAt String @db.VarChar(10) @default("22:00")
+  logoUrl String @db.VarChar(255)
+  menu Products[]
+}
+
+enum RestaurantCategory {
+  FAST_FOOD
+  ITALIAN
+  JAPANESE
+  CHINESE
+  MEXICAN
+  VEGETARIAN
+  PIZZA
+  BURGER
+  SEAFOOD
+  BAKERY
+  COFFEE_SHOP
+  DESSERT
+  OTHERS
+}
+
+model Products {
+  id Int @id @default(autoincrement())
+  name String @db.VarChar(255)
+  category ProductCategory @default(OTHERS)
+  price Decimal @db.Decimal(10, 2)
+  restaurantId Int 
+  restaurant Restaurants @relation(fields: [restaurantId], references: [id])
+  description String @db.Text
+  imageUrl String @db.Text
+}
+
+enum ProductCategory {
+  BURGER
+  PIZZA
+  SUSHI
+  SANDWICH
+  DRINK
+  DESSERT
+  SALAD
+  SOUP
+  SNACK
+  BREAKFAST
+  VEGAN
+  VEGETARIAN
+  OTHERS
+}
