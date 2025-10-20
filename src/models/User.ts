@@ -83,7 +83,7 @@ export class User {
         email,
         password,
         phone,
-        role,
+        role
       },
     });
 

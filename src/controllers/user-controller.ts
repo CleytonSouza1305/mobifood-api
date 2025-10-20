@@ -65,7 +65,7 @@ const register: Handler = async (req, res, next) => {
     }
 
     const hashedPassword = bcrypt.hashSync(body.password, 10);
-    const newUser = await User.createUser(
+    await User.createUser(
       body.username,
       body.email,
       hashedPassword,
@@ -73,7 +73,7 @@ const register: Handler = async (req, res, next) => {
       body.role
     );
 
-    res.status(201).json(newUser);
+    res.status(201).json({ message: 'Usuário criado com sucesso!' });
   } catch (error) {
     if (error instanceof ZodError) {
       const errorFIeld = error.issues.map((el) => el.path.join(".")).join(", ");
