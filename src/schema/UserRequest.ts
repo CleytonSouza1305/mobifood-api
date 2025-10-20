@@ -6,7 +6,7 @@ export const CreateUserRequestSchema = z.object({
   username: z.string().min(2).max(100),
   email: z.string().email(),
   password: z.string().min(6).max(100),
-  phone: z.string().min(10).max(15),
+  phone: z.string().min(14).max(17),
   role: roleEnum.optional().default('user'),
   favoriteTheme: z.enum(['light', 'dark']).optional()
 });
