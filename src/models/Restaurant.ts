@@ -29,10 +29,29 @@ export class Restaurant {
     const restaurant = await prisma.restaurants.findUnique({
       where: { id },
       include: {
-        menu: true
+        menu: true,
+        comments: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                username: true,
+                email: true
+              }
+            }
+          }
+        }
       }
     })
 
-    return restaurant
+    const avaliationTotal = restaurant?.comments.reduce((acc, n) => acc + n.rating, 0)
+    const media = Number(avaliationTotal) / Number(restaurant?.comments.length)
+
+    if (!restaurant) return null
+
+    return {
+      avaliation: media,
+      ...restaurant
+    }
   }
 } 
