@@ -143,5 +143,6 @@ model Comments {
   userId Int
   user User @relation(fields: [userId], references: [id])
   rating Float @default(0)
+  comment String @db.Text
   createdAt DateTime @default(now())
 }
