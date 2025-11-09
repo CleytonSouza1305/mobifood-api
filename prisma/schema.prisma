@@ -24,6 +24,7 @@ model User {
   favoriteTheme FavoriteTheme @default(light)
   address        Address[]
   paymentMethods PaymentMethods[]
+  comments Comments[]
   createdAt      DateTime         @default(now())
   updatedAt      DateTime         @updatedAt
 }
@@ -87,6 +88,7 @@ model Restaurants {
   closeAt String @db.VarChar(10) @default("22:00")
   logoUrl String @db.VarChar(255)
   menu Products[]
+  comments Comments[]
 }
 
 enum RestaurantCategory {
@@ -130,4 +132,16 @@ enum ProductCategory {
   VEGAN
   VEGETARIAN
   OTHERS
+}
+
+model Comments {
+  id Int @id @default(autoincrement())
+
+  restaurantId Int 
+  restaurant Restaurants @relation(fields: [restaurantId], references: [id])
+
+  userId Int
+  user User @relation(fields: [userId], references: [id])
+  rating Float @default(0)
+  createdAt DateTime @default(now())
 }
