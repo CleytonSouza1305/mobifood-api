@@ -54,4 +54,17 @@ export class Restaurant {
       ...restaurant
     }
   }
+
+  static commentRestaurant = async (restaurantId: number, userId: number, rating: number, commentText: string) => {
+    const comment = await prisma.comments.create({
+      data: {
+        comment: commentText,
+        rating,
+        restaurantId,
+        userId
+      }
+    })
+
+    return comment
+  }
 } 

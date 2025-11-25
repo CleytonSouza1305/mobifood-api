@@ -28,3 +28,8 @@ export const UpdateUserPasswordRequestSchema = z.object({
   password: z.string().min(6),
   newPassword: z.string().min(6)
 })
+
+export const CreateCommentRequestSchema = z.object({
+  rating: z.number(),
+  comment: z.string().min(3).max(300)
+})
