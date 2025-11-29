@@ -39,7 +39,11 @@ export class Restaurant {
                 email: true
               }
             }
-          }
+          },
+          orderBy: {
+            createdAt: 'desc'
+          },
+          take: 20
         }
       }
     })
