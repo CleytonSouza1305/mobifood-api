@@ -105,8 +105,17 @@ const commentRestaurantReq: Handler = async (req, res, next) => {
       throw new HttpError(403, "Acesso negado.");
     }
 
+    const restaurantComments = existRestaurant.comments;
+
+    const existComment = restaurantComments.filter((c) => c.userId === user.id);
+
+    if (existComment.length > 0) {
+      throw new HttpError(400, "Você já possui um comentário registrado.");
+    }
+
     const comment = await Restaurant.commentRestaurant(restaurantId, userId, body.rating, body.comment);
     res.json(comment);
+
   } catch (error) {
     if (error instanceof ZodError) {
       const errorFIeld = error.issues.map((el) => el.path.join(".")).join(", ");
