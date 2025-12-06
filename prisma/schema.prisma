@@ -21,10 +21,11 @@ model User {
   password       String
   phone          String?          @db.VarChar(20)
   role           UserRole         @default(user)
-  favoriteTheme FavoriteTheme @default(light)
+  favoriteTheme  FavoriteTheme    @default(light)
   address        Address[]
   paymentMethods PaymentMethods[]
-  comments Comments[]
+  comments       Comments[]
+  cart           Cart[]
   createdAt      DateTime         @default(now())
   updatedAt      DateTime         @updatedAt
 }
@@ -62,7 +63,7 @@ enum AddressRole {
 model PaymentMethods {
   id        Int         @id @default(autoincrement())
   method    PaymentType
-  details   Json? 
+  details   Json?
   isDefault Boolean     @default(false)
   userId    Int
   user      User        @relation(fields: [userId], references: [id])
@@ -80,14 +81,14 @@ enum PaymentType {
 }
 
 model Restaurants {
-  id Int @id @default(autoincrement())
-  name String @db.VarChar(50)
+  id       Int                @id @default(autoincrement())
+  name     String             @db.VarChar(50)
   category RestaurantCategory @default(OTHERS)
-  local String @db.VarChar(255)
-  openAt String @db.VarChar(10) @default("10:00")
-  closeAt String @db.VarChar(10) @default("22:00")
-  logoUrl String @db.VarChar(255)
-  menu Products[]
+  local    String             @db.VarChar(255)
+  openAt   String             @default("10:00") @db.VarChar(10)
+  closeAt  String             @default("22:00") @db.VarChar(10)
+  logoUrl  String             @db.VarChar(255)
+  menu     Products[]
   comments Comments[]
 }
 
@@ -108,14 +109,16 @@ enum RestaurantCategory {
 }
 
 model Products {
-  id Int @id @default(autoincrement())
-  name String @db.VarChar(255)
-  category ProductCategory @default(OTHERS)
-  price Decimal @db.Decimal(10, 2)
-  restaurantId Int 
-  restaurant Restaurants @relation(fields: [restaurantId], references: [id])
-  description String @db.Text
-  imageUrl String @db.Text
+  id           Int             @id @default(autoincrement())
+  name         String          @db.VarChar(255)
+  category     ProductCategory @default(OTHERS)
+  price        Decimal         @db.Decimal(10, 2)
+  restaurantId Int
+  restaurant   Restaurants     @relation(fields: [restaurantId], references: [id])
+  description  String          @db.Text
+  imageUrl     String          @db.Text
+  carts        Cart[]
+  cartItems    CartItem[]
 }
 
 enum ProductCategory {
@@ -137,12 +140,38 @@ enum ProductCategory {
 model Comments {
   id Int @id @default(autoincrement())
 
-  restaurantId Int 
-  restaurant Restaurants @relation(fields: [restaurantId], references: [id])
+  restaurantId Int
+  restaurant   Restaurants @relation(fields: [restaurantId], references: [id])
 
-  userId Int
-  user User @relation(fields: [userId], references: [id])
-  rating Float @default(0)
-  comment String @db.Text
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+  rating    Float    @default(0)
+  comment   String   @db.Text
   createdAt DateTime @default(now())
+}
+
+model Cart {
+  id     Int  @id @default(autoincrement())
+  userId Int
+  user   User @relation(fields: [userId], references: [id])
+
+  productId Int
+  product   Products @relation(fields: [productId], references: [id])
+
+  cartTotal Float      @default(0)
+  createdAt DateTime   @default(now())
+  items CartItem[]
+}
+
+model CartItem {
+  id     Int  @id @default(autoincrement())
+  cartId Int
+  cart   Cart @relation(fields: [cartId], references: [id])
+
+  productId Int
+  product   Products @relation(fields: [productId], references: [id])
+
+  quantity Int   @default(1)
+  price    Float
+  subtotal Float
 }
