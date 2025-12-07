@@ -139,7 +139,6 @@ const login: Handler = async (req, res, next) => {
     }
 
     const token = jwt.sign(payload, JWT_SECRET, { expiresIn: "7d" });
-    console.log(token);
     res.json({ token });
   } catch (error) {
     if (error instanceof ZodError) {

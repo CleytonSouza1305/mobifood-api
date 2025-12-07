@@ -61,7 +61,16 @@ export class User {
         createdAt: true,
         updatedAt: true,
         address: true,
-        paymentMethods: true
+        paymentMethods: true,
+        cart: {
+          include: {
+            items: {
+              include: {
+                item: true
+              }
+            }
+          }
+        }
       },
     });
 
