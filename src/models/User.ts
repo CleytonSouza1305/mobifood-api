@@ -119,4 +119,22 @@ export class User {
 
     return deletedUser;
   };
+
+  static addItemToCart = async (cartId: number, itemId: number, quantity: number) => {
+    const product = await prisma.products.findUnique({ where: { id: itemId } })
+    if (!product) {
+      return { message: `Product not found.`}
+    }
+
+    const newItem = await prisma.cartItem.createMany({
+      data: {
+        cartId,
+        itemId,
+        quantity,
+        subTotal: +product.price * quantity
+      }
+    })
+
+    return newItem
+  }
 }
