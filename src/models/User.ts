@@ -96,6 +96,12 @@ export class User {
       },
     });
 
+    await prisma.cart.createMany({
+      data: {
+        userId: newUser.id
+      }
+    })
+
     return newUser;
   };
 
