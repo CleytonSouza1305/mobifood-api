@@ -25,6 +25,7 @@ model User {
   address        Address[]
   paymentMethods PaymentMethods[]
   comments       Comments[]
+  cart Cart[]
   createdAt      DateTime         @default(now())
   updatedAt      DateTime         @updatedAt
 }
@@ -116,6 +117,7 @@ model Products {
   restaurant   Restaurants     @relation(fields: [restaurantId], references: [id])
   description  String          @db.Text
   imageUrl     String          @db.Text
+  cartItems CartItem[]
 }
 
 enum ProductCategory {
@@ -147,3 +149,25 @@ model Comments {
   createdAt DateTime @default(now())
 }
 
+model Cart {
+  id Int @id @default(autoincrement())
+
+  userId Int 
+  user User @relation(fields: [userId], references: [id])
+  items CartItem[]
+
+  total Float @default(0)
+}
+
+model CartItem {
+  id Int @id @default(autoincrement())
+
+  cartId Int
+  cart Cart @relation(fields: [cartId], references: [id])
+
+  itemId Int
+  item Products @relation(fields: [itemId], references: [id])
+
+  quantity Int @default(1)
+  subTotal Float?
+}
