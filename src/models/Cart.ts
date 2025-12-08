@@ -30,6 +30,15 @@ export class Cart {
       }
     })
 
-    return newItem
+    const cart = await prisma.cart.findUnique({
+      where: { id: cartId },
+      include: {
+        items: {
+          include: { item: true }
+        }
+      }
+    })
+
+    return cart
   }
 }
