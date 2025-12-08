@@ -25,7 +25,7 @@ model User {
   address        Address[]
   paymentMethods PaymentMethods[]
   comments       Comments[]
-  cart Cart[]
+  cart Cart?
   createdAt      DateTime         @default(now())
   updatedAt      DateTime         @updatedAt
 }
@@ -152,7 +152,7 @@ model Comments {
 model Cart {
   id Int @id @default(autoincrement())
 
-  userId Int 
+  userId Int @unique
   user User @relation(fields: [userId], references: [id])
   items CartItem[]
 
