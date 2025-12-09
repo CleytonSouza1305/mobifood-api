@@ -1,44 +1,83 @@
-import { prisma } from "../database"
+import { prisma } from "../database";
 
 export class Cart {
   static cartById = async (cartId: number) => {
-    const cart = await prisma.cart.findUnique({ 
+    const cart = await prisma.cart.findUnique({
       where: {
-         id: cartId 
+        id: cartId,
+      },
+      include: {
+        items: {
+          include: { item: true },
         },
-        include: {
-          items: {
-            include:  { item: true }
-          }
-        }
-    })
-    return cart
-  }
+      },
+    });
+    return cart;
+  };
 
-  static addItemToCart = async (cartId: number, itemId: number, quantity: number) => {
-    const product = await prisma.products.findUnique({ where: { id: itemId } })
+  static addItemToCart = async (
+    cartId: number,
+    itemId: number,
+    quantity: number
+  ) => {
+    const product = await prisma.products.findUnique({ where: { id: itemId } });
     if (!product) {
-      return { message: `Product not found.`}
+      return { message: `Product not found.` };
     }
-
-    const newItem = await prisma.cartItem.createMany({
-      data: {
-        cartId,
-        itemId,
-        quantity,
-        subTotal: +product.price * quantity
-      }
-    })
 
     const cart = await prisma.cart.findUnique({
       where: { id: cartId },
       include: {
         items: {
-          include: { item: true }
+          include: { item: true },
+        },
+      },
+    });
+
+    const existsItem = cart?.items.find((i) => i.itemId === product.id);
+    if (existsItem) {
+      await prisma.cartItem.update({
+        where: { id: existsItem.id },
+        data: {
+          quantity: existsItem.quantity + quantity,
+          subTotal: +product.price * (existsItem.quantity + quantity),
+        },
+      });
+    } else {
+      await prisma.cartItem.createMany({
+        data: {
+          cartId,
+          itemId,
+          quantity,
+          subTotal: +product.price * quantity,
+        },
+      });
+    }
+
+    const updatedCart = await prisma.cart.findUnique({
+      where: { id: cartId },
+      include: { items: true },
+    });
+
+    const total = updatedCart?.items.reduce(
+      (acc, item) => acc + (item.subTotal ?? 0),
+      0
+    );
+
+    await prisma.cart.update({
+      where: { id: cartId },
+      data: { total },
+    });
+
+    return await prisma.cart.findUnique({
+      where: { id: cartId },
+      include: {
+        items: {
+          include: {
+            item: true
+          }
         }
       }
-    })
-
-    return cart
-  }
+    });
+  };
 }
