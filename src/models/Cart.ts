@@ -103,7 +103,7 @@ export class Cart {
     const existsItem = cart?.items.find((i) => i.itemId === product.id);
     if (!existsItem) return { message: "Item not found in cart." }
 
-    await prisma.cartItem.update({
+    const item = await prisma.cartItem.update({
       where: { id: existsItem.id },
       data: {
         quantity,
@@ -111,6 +111,12 @@ export class Cart {
       },
     });
 
+    if (item.quantity < 1) {
+      await prisma.cartItem.delete({
+        where: { id: item.id }
+      })
+    }
+console.log(item)
     const updatedCart = await prisma.cart.findUnique({
       where: { id: cartId },
       include: { items: true },
@@ -121,7 +127,7 @@ export class Cart {
       0
     );
 
-    await prisma.cart.update({
+    return await prisma.cart.update({
       where: { id: cartId },
       data: { total },
     });
