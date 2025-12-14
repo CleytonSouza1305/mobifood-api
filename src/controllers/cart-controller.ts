@@ -80,10 +80,11 @@ const addItemToCart: Handler = async (req, res, next) => {
   }
 };
 
-// PUT /api/cart
+// PUT /api/cart/:itemId
 const updateItemOnCart: Handler = async (req, res, next) => {
   try {
-    const body = AddItemToCartRequest.parse(req.body);
+    const quantity = Number(req.body.quantity);
+    const itemId = Number(req.params.itemId);
 
     if (!req.user || typeof req.user !== "object" || !("id" in req.user)) {
       throw new HttpError(401, "Usuário não autenticado.");
@@ -102,8 +103,8 @@ const updateItemOnCart: Handler = async (req, res, next) => {
 
     const updatedItem = await Cart.updateItemCart(
       user.cart.id,
-      body.itemId,
-      body.quantity
+      itemId,
+      quantity
     );
     res.status(201).json(updatedItem);
   } catch (error) {
@@ -128,4 +129,31 @@ const updateItemOnCart: Handler = async (req, res, next) => {
   }
 };
 
-export { getCart, addItemToCart, updateItemOnCart };
+// DELETE /api/cart/:id
+const deleteItemOnCart: Handler = async (req, res, next) => {
+  try {
+    const itemId = Number(req.params.itemId);
+
+    if (!req.user || typeof req.user !== "object" || !("id" in req.user)) {
+      throw new HttpError(401, "Usuário não autenticado.");
+    }
+
+    const user = req.user as JwtPayload & { id: number; role: string };
+
+    const cart = await Cart.cartById(user.cart.id);
+    if (!cart) {
+      throw new HttpError(404, "Cart not found.");
+    }
+
+    if (user.id !== cart.userId && user.role !== "admin") {
+      throw new HttpError(403, "User not authorized.");
+    }
+
+    const deletedItem = await Cart.removeItemFromCart(user.cart.id, itemId)
+    res.status(200).json({ message: 'Item deletado com sucesso!', deletedItem })
+  } catch (error) {
+    next(error);
+  }
+};
+
+export { getCart, addItemToCart, updateItemOnCart, deleteItemOnCart };
