@@ -6,18 +6,18 @@ interface UserInfo {
   username?: string;
   phone?: string;
   role?: UserRole;
-  password?: string
+  password?: string;
 }
 
 export interface userFilter {
-  page: number,
-  pageSize: number,
+  page: number;
+  pageSize: number;
   where: {
-    username?: { contains: string, mode: 'insensitive' | 'default' },
-    role?: { equals: UserRole }
-  },
-  sortBy: string,
-  order: 'asc' | 'desc'
+    username?: { contains: string; mode: "insensitive" | "default" };
+    role?: { equals: UserRole };
+  };
+  sortBy: string;
+  order: "asc" | "desc";
 }
 
 export class User {
@@ -32,7 +32,7 @@ export class User {
         createdAt: true,
         updatedAt: true,
       },
-      where: filter.where
+      where: filter.where,
     });
 
     const total = await prisma.user.count({ where: filter.where });
@@ -60,13 +60,23 @@ export class User {
         favoriteTheme: true,
         createdAt: true,
         updatedAt: true,
-        address: true
+        address: true,
+        paymentMethods: true,
+        cart: {
+          include: {
+            items: {
+              include: {
+                item: true,
+              },
+            },
+          },
+        },
       },
     });
 
     if (!user) return null;
 
-    return user
+    return user;
   };
 
   static createUser = async (
@@ -82,15 +92,15 @@ export class User {
         email,
         password,
         phone,
-        role
+        role,
       },
     });
 
     await prisma.cart.createMany({
       data: {
-        userId: newUser.id
-      }
-    })
+        userId: newUser.id,
+      },
+    });
 
     return newUser;
   };
