@@ -60,17 +60,7 @@ export class User {
         favoriteTheme: true,
         createdAt: true,
         updatedAt: true,
-        address: true,
-        paymentMethods: true,
-        cart: {
-          include: {
-            items: {
-              include: {
-                item: true
-              }
-            }
-          }
-        }
+        address: true
       },
     });
 
