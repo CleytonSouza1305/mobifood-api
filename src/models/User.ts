@@ -93,12 +93,9 @@ export class User {
         password,
         phone,
         role,
-      },
-    });
-
-    await prisma.cart.createMany({
-      data: {
-        userId: newUser.id,
+        cart: {
+          create: {}
+        }
       },
     });
 
