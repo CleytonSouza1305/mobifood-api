@@ -116,7 +116,7 @@ model Products {
   restaurantId Int
   restaurant   Restaurants     @relation(fields: [restaurantId], references: [id])
   description  String          @db.Text
-  imageUrl     String          @db.Text
+  imageUrl     String?          @db.Text
   cartItems CartItem[]
 }
 
