@@ -12,7 +12,24 @@ export class Cart {
         },
       },
     });
-    return cart;
+
+    const total = cart?.items.reduce(
+      (acc, item) => acc + (item.subTotal ?? 0),
+      0
+    );
+
+    const updatedCart = await prisma.cart.update({ 
+      where: { id: cartId }, 
+      data: { total },
+      include: {
+        items: {
+          include: { item: true }
+        }
+      }
+      }
+    );
+
+    return updatedCart;
   };
 
   static addItemToCart = async (
@@ -133,10 +150,7 @@ export class Cart {
     });
   };
 
-  static removeItemFromCart = async (
-    cartId: number,
-    itemId: number
-  ) => {
+  static removeItemFromCart = async (cartId: number, itemId: number) => {
     const product = await prisma.products.findUnique({ where: { id: itemId } });
     if (!product) {
       return { message: `Product not found.` };
@@ -155,8 +169,8 @@ export class Cart {
     if (!existsItem) return { message: "Item not found in cart." };
 
     await prisma.cartItem.delete({
-      where: { id: existsItem.id }
-    })
+      where: { id: existsItem.id },
+    });
 
     const updatedCart = await prisma.cart.findUnique({
       where: { id: cartId },
@@ -173,9 +187,9 @@ export class Cart {
       data: { total },
       include: {
         items: {
-          include: { item: true }
-        }
-      }
+          include: { item: true },
+        },
+      },
     });
   };
 }
