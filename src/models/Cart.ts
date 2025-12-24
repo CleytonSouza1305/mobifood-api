@@ -130,6 +130,11 @@ export class Cart {
     return await prisma.cart.update({
       where: { id: cartId },
       data: { total },
+      include: {
+        items: {
+          include: { item: true }
+        }
+      }
     });
   };
 
