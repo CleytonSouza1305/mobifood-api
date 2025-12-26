@@ -25,7 +25,9 @@ model User {
   address        Address[]
   paymentMethods PaymentMethods[]
   comments       Comments[]
-  cart Cart?
+  cart           Cart?
+
+  coupons UsageCoupon[]
   createdAt      DateTime         @default(now())
   updatedAt      DateTime         @updatedAt
 }
@@ -116,8 +118,8 @@ model Products {
   restaurantId Int
   restaurant   Restaurants     @relation(fields: [restaurantId], references: [id])
   description  String          @db.Text
-  imageUrl     String?          @db.Text
-  cartItems CartItem[]
+  imageUrl     String?         @db.Text
+  cartItems    CartItem[]
 }
 
 enum ProductCategory {
@@ -152,9 +154,9 @@ model Comments {
 model Cart {
   id Int @id @default(autoincrement())
 
-  userId Int @unique
-  user User @relation(fields: [userId], references: [id])
-  items CartItem[]
+  userId Int        @unique
+  user   User       @relation(fields: [userId], references: [id])
+  items  CartItem[]
 
   total Float @default(0)
 }
@@ -163,11 +165,53 @@ model CartItem {
   id Int @id @default(autoincrement())
 
   cartId Int
-  cart Cart @relation(fields: [cartId], references: [id])
+  cart   Cart @relation(fields: [cartId], references: [id])
 
   itemId Int
-  item Products @relation(fields: [itemId], references: [id])
+  item   Products @relation(fields: [itemId], references: [id])
 
-  quantity Int @default(1)
+  quantity Int    @default(1)
   subTotal Float?
 }
+
+model Coupons {
+  id Int @id @default(autoincrement())
+
+  code String @unique @db.VarChar(255)
+
+  description String @db.Text
+  discountType discountTypeEnum @default(FIXED)
+
+  discountValue Decimal @db.Decimal(10,2)
+
+  usageLimit Int?
+  userUsageLimit Int @default(1)
+  startsAt DateTime?
+  expiresAt DateTime?
+  is_active Boolean @default(true)
+
+  createdAt DateTime @default(now())
+
+  usages UsageCoupon[]
+  
+}
+
+enum discountTypeEnum {
+  FIXED
+  PERCENTAGE
+}
+
+model UsageCoupon {
+  id Int @id @default(autoincrement())
+
+  userId Int
+  couponId Int
+
+  user User @relation(fields: [userId], references: [id])
+  coupon Coupons @relation(fields: [couponId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, couponId])
+}
+
