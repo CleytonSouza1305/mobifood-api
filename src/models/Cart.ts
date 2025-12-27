@@ -21,9 +21,7 @@ export class Cart {
     quantity: number
   ) => {
     const product = await prisma.products.findUnique({ where: { id: itemId } });
-    if (!product) {
-      return { message: `Product not found.` };
-    }
+    if (!product) return
 
     const cart = await prisma.cart.findUnique({
       where: { id: cartId },
