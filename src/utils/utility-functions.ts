@@ -13,9 +13,12 @@ function isRestaurantOpen(openAt: number, closeAt: number): boolean {
   return currentHour >= openAt || currentHour < closeAt;
 }
 
+function getHour(time: string): number {
+  return Number(time.split(':')[0]);
+}
+
 async function validateProductAndRestaurant(
-  productId: number,
-  restaurantId: number
+  productId: number
 ) {
   const product = await prisma.products.findUnique({
     where: { id: productId },
@@ -24,32 +27,24 @@ async function validateProductAndRestaurant(
     },
   });
 
+  console.log(product)
+
   if (!product) throw new HttpError(404, "Product not found.");
 
   const restaurant = product.restaurant;
 
   if (!restaurant) throw new HttpError(404, "Restaurant not found.");
 
-  if (product.restaurantId !== restaurantId) {
-    throw new HttpError(
-      400,
-      "This product does not belong to this restaurant."
-    );
-  }
-
   if (
-    !isRestaurantOpen(Number(restaurant.openAt), Number(restaurant.closeAt))
+    !isRestaurantOpen(getHour(restaurant.openAt), getHour(restaurant.closeAt))
   ) {
     throw new HttpError(
       400,
-      "Unable to add item to cart, the restaurant is closed."
+      `Não foi possível inserir "${product.name}" ao carrinho, "${restaurant.name}" se encontra fechado.`
     );
   }
 
-  return {
-    product,
-    restaurant,
-  };
+  return true
 }
 
 export { validateProductAndRestaurant };
