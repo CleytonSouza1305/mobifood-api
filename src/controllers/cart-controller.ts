@@ -4,6 +4,7 @@ import { HttpError } from "../error/HttpError";
 import { JwtPayload } from "jsonwebtoken";
 import { AddItemToCartRequest } from "../schema/CartRequest";
 import { ZodError } from "zod";
+import { validateProductAndRestaurant } from "../utils/utility-functions";
 
 // GET /api/cart
 const getCart: Handler = async (req, res, next) => {
@@ -50,14 +51,12 @@ const addItemToCart: Handler = async (req, res, next) => {
       throw new HttpError(403, "User not authorized.");
     }
 
-    const itemAdded = await Cart.addItemToCart(
-      user.cart.id,
-      body.itemId,
-      body.quantity
-    );
-    res.status(201).json(itemAdded);
+    const isValidInsert = await validateProductAndRestaurant(body.itemId);
+    if (isValidInsert) {
+      await Cart.addItemToCart(user.cart.id, body.itemId, body.quantity);
+    }
 
-    res.json(true);
+    res.status(201).json({ message: 'OK' });
   } catch (error) {
     if (error instanceof ZodError) {
       const errorFIeld = error.issues.map((el) => el.path.join(".")).join(", ");
@@ -149,8 +148,10 @@ const deleteItemOnCart: Handler = async (req, res, next) => {
       throw new HttpError(403, "User not authorized.");
     }
 
-    const deletedItem = await Cart.removeItemFromCart(user.cart.id, itemId)
-    res.status(200).json({ message: 'Item deletado com sucesso!', deletedItem })
+    const deletedItem = await Cart.removeItemFromCart(user.cart.id, itemId);
+    res
+      .status(200)
+      .json({ message: "Item deletado com sucesso!", deletedItem });
   } catch (error) {
     next(error);
   }
