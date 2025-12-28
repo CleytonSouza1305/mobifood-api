@@ -21,7 +21,7 @@ export interface CouponsFilter {
   order: "asc" | "desc";
 }
 
-interface CouponType {
+export interface CouponType {
   couponName: string;
   code: string;
   description: string;
@@ -29,7 +29,7 @@ interface CouponType {
   discountValue: number;
   startsAt: Date;
   expiresAt: Date;
-  is_ctive: boolean;
+  is_active: boolean;
 }
 
 export class Coupon {
@@ -47,7 +47,9 @@ export class Coupon {
 
     return {
       coupons,
-      count,
+      page: filter.page,
+      pageSize: filter.pageSize,
+      count
     };
   };
 

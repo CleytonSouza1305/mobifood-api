@@ -148,7 +148,7 @@ function generateRandomDescription(context: DescriptionContext): string {
   return selectedCategory[randomIndex];
 }   
 
-async function generateCoupon(
+export async function generateCoupon(
   isWeekly: boolean,
   startsAt?: Date,
   expiresAt?: Date
@@ -193,7 +193,8 @@ async function generateCoupon(
     discountValue: randomType === "DELIVERY" ? 0 : value,
     startsAt: startsAtDate,
     expiresAt: expiresAtDate,
-    is_ctive: true,
+    is_active: true,
+    usageLimit: 1
   };
 
   return newCoupon;

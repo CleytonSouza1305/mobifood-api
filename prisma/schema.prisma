@@ -176,24 +176,17 @@ model CartItem {
 
 model Coupons {
   id Int @id @default(autoincrement())
-
   code String @unique @db.VarChar(255)
-
   couponName String @db.VarChar(255)
-
   description String @db.Text
   discountType discountTypeEnum @default(FIXED)
-
   discountValue Decimal @db.Decimal(10,2)
-
   usageLimit Int?
   userUsageLimit Int @default(1)
   startsAt DateTime?
   expiresAt DateTime?
   is_active Boolean @default(true)
-
   createdAt DateTime @default(now())
-
   usages UsageCoupon[]
   
 }
