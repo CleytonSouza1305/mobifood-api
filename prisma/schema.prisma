@@ -179,6 +179,8 @@ model Coupons {
 
   code String @unique @db.VarChar(255)
 
+  couponName String @db.VarChar(255)
+
   description String @db.Text
   discountType discountTypeEnum @default(FIXED)
 
@@ -199,6 +201,7 @@ model Coupons {
 enum discountTypeEnum {
   FIXED
   PERCENTAGE
+  DELIVERY
 }
 
 model UsageCoupon {

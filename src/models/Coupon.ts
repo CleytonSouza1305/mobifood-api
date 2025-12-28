@@ -1,0 +1,63 @@
+import { prisma } from "../database";
+import { DiscountType } from "../utils/generateWeeklyCoupons";
+
+export interface CouponsFilter {
+  page: number;
+  pageSize: number;
+  where: {
+    code?: {
+      contains: string;
+      mode?: "insensitive" | "default";
+    };
+    is_active?: {
+      equals: boolean;
+    };
+    couponName?: {
+      contains: string;
+      mode?: "insensitive" | "default";
+    };
+  };
+  sortBy: string;
+  order: "asc" | "desc";
+}
+
+interface CouponType {
+  couponName: string;
+  code: string;
+  description: string;
+  discountType: DiscountType;
+  discountValue: number;
+  startsAt: Date;
+  expiresAt: Date;
+  is_ctive: boolean;
+}
+
+export class Coupon {
+  static allCoupon = async (filter: CouponsFilter) => {
+    const coupons = await prisma.coupons.findMany({
+      where: filter.where,
+      orderBy: {
+        [filter.sortBy]: filter.order,
+      },
+      skip: (filter.page - 1) * filter.pageSize,
+      take: filter.pageSize,
+    });
+
+    const count = await prisma.coupons.count({ where: filter.where });
+
+    return {
+      coupons,
+      count,
+    };
+  };
+
+  static create = async (coupon: CouponType) => {
+    const newCoupon = await prisma.coupons.create({
+      data: {
+        ...coupon
+      }
+    })
+
+    return newCoupon
+  };
+}

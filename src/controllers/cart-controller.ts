@@ -4,7 +4,7 @@ import { HttpError } from "../error/HttpError";
 import { JwtPayload } from "jsonwebtoken";
 import { AddItemToCartRequest } from "../schema/CartRequest";
 import { ZodError } from "zod";
-import { validateProductAndRestaurant } from "../utils/utility-functions";
+import { validateProductAndRestaurant } from "../utils/validateProductAndRestaurant";
 
 // GET /api/cart
 const getCart: Handler = async (req, res, next) => {
