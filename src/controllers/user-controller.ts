@@ -18,36 +18,50 @@ dotenv.config();
 // GET /auth/users
 const getAllUsers: Handler = async (req, res, next) => {
   try {
-    const { page = 1, limit = 10, username, role, sortBy = "createdAt", order = "asc" } = req.query
+    const {
+      page = 1,
+      limit = 10,
+      username,
+      role,
+      sortBy = "createdAt",
+      order = "asc",
+    } = req.query;
 
-    const pageSize = Number(page)
-    const limitSize = Number(limit)
+    const pageSize = Number(page);
+    const limitSize = Number(limit);
 
     const filter: userFilter = {
-    page: pageSize,
-    pageSize: limitSize,
-    where: {},
-    sortBy: String(sortBy),
-    order: order === 'desc' ? 'desc' : 'asc'
-  };
-    
-    if (username) filter.where.username = { contains: String(username), mode: 'insensitive' }
-    if (role) filter.where.role = { equals: String(role) as UserRole }
+      page: pageSize,
+      pageSize: limitSize,
+      where: {},
+      sortBy: String(sortBy),
+      order: order === "desc" ? "desc" : "asc",
+    };
 
-    if (role !== 'user' && role !== 'delivery' && role !== 'admin') {
-      throw new HttpError(400, "Etiqueta para usuário inválida' ");
+    if (username)
+      filter.where.username = {
+        contains: String(username),
+        mode: "insensitive",
+      };
+    if (role) filter.where.role = { equals: String(role) as UserRole };
+
+    if (role) {
+      if (role !== "user" && role !== "delivery" && role !== "admin") {
+        throw new HttpError(400, "Etiqueta para usuário inválida");
+      }
+      filter.where.role = { equals: String(role) as UserRole };
     }
 
-    filter.page = pageSize
-    filter.pageSize = limitSize
-    filter.sortBy = String(sortBy)
+    filter.page = pageSize;
+    filter.pageSize = limitSize;
+    filter.sortBy = String(sortBy);
 
     const users = await User.allUsers(filter);
     res.json({
       data: users.data,
       page: pageSize,
       limit: limitSize,
-      total: users.total
+      total: users.total,
     });
   } catch (error) {
     next(error);
@@ -73,7 +87,7 @@ const register: Handler = async (req, res, next) => {
       body.role
     );
 
-    res.status(201).json({ message: 'Usuário criado com sucesso!' });
+    res.status(201).json({ message: "Usuário criado com sucesso!" });
   } catch (error) {
     if (error instanceof ZodError) {
       const errorFIeld = error.issues.map((el) => el.path.join(".")).join(", ");
@@ -91,24 +105,15 @@ const register: Handler = async (req, res, next) => {
       }
 
       if (errorFIeld.includes("phone")) {
-        throw new HttpError(
-          400,
-          "Formato de telefone inválido."
-        );
+        throw new HttpError(400, "Formato de telefone inválido.");
       }
 
       if (errorFIeld.includes("role")) {
-        throw new HttpError(
-          400,
-          "Etiqueta para usuário inválida' "
-        );
+        throw new HttpError(400, "Etiqueta para usuário inválida' ");
       }
 
       if (errorFIeld.includes("favoriteTheme")) {
-        throw new HttpError(
-          400,
-          "Tema inválido, só permite ligth e dark."
-        );
+        throw new HttpError(400, "Tema inválido, só permite ligth e dark.");
       }
     } else {
       next(error);
@@ -210,7 +215,7 @@ const updateUserById: Handler = async (req, res, next) => {
     }
 
     await User.updateUser(body, id);
-    res.json({ message: 'Usuário atualizado com sucesso.' });
+    res.json({ message: "Usuário atualizado com sucesso." });
   } catch (error) {
     if (error instanceof ZodError) {
       const errorFIeld = error.issues.map((el) => el.path.join(".")).join(", ");
@@ -224,24 +229,15 @@ const updateUserById: Handler = async (req, res, next) => {
       }
 
       if (errorFIeld.includes("phone")) {
-        throw new HttpError(
-          400,
-          "Formato de telefone inválido."
-        );
+        throw new HttpError(400, "Formato de telefone inválido.");
       }
 
       if (errorFIeld.includes("role")) {
-        throw new HttpError(
-          400,
-          "Etiqueta para usuário inválida' "
-        );
+        throw new HttpError(400, "Etiqueta para usuário inválida' ");
       }
 
       if (errorFIeld.includes("favoriteTheme")) {
-        throw new HttpError(
-          400,
-          "Tema inválido, só permite ligth e dark."
-        );
+        throw new HttpError(400, "Tema inválido, só permite ligth e dark.");
       }
     } else {
       next(error);
@@ -273,7 +269,7 @@ const deleteUserById: Handler = async (req, res, next) => {
     }
 
     await User.deleteUser(id);
-    res.json({ message: 'Usuário deletado com sucesso.' });
+    res.json({ message: "Usuário deletado com sucesso." });
   } catch (error) {
     next(error);
   }
