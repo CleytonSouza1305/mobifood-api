@@ -185,9 +185,11 @@ export async function generateCoupon(
     keyword: keyword,
   });
 
+  const timestamp = Date.now()
+
   const newCoupon = {
     couponName: couponTitle,
-    code: couponTitle.toUpperCase(),
+    code: couponTitle.toUpperCase() + timestamp,
     description: description,
     discountType: randomType,
     discountValue: randomType === "DELIVERY" ? 0 : value,

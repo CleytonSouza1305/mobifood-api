@@ -97,7 +97,6 @@ const createCoupon: Handler = async (req, res, next) => {
       newCoupon = await Coupon.create(data);
     } else {
       const body = CreateRandomCouponSchema.parse(req.body);
-      console.log("Aleatorio...");
 
       const coupon = await generateCoupon(false, body.startsAt, body.expiresAt);
       newCoupon = await Coupon.create(coupon)
