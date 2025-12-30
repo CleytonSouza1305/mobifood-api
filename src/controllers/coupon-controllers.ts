@@ -8,7 +8,9 @@ import { HttpError } from "../error/HttpError";
 import { ZodError } from "zod";
 import { JwtPayload } from "jsonwebtoken";
 import { generateCoupon } from "../utils/generateWeeklyCoupons";
+import { User } from "../models/User";
 
+// GET api/coupons
 const allCoupons: Handler = async (req, res, next) => {
   try {
     const {
@@ -60,6 +62,7 @@ const allCoupons: Handler = async (req, res, next) => {
   }
 };
 
+// POST api/coupons
 const createCoupon: Handler = async (req, res, next) => {
   try {
     if (!req.user || typeof req.user !== "object" || !("id" in req.user)) {
@@ -152,4 +155,32 @@ const createCoupon: Handler = async (req, res, next) => {
   }
 };
 
-export { allCoupons, createCoupon };
+// GET api/coupons/usage/id
+const couponUsage: Handler = async (req, res, next) => {
+  try {
+    const userId = Number(req.params.id)
+
+    const existsUser = await User.findById(userId)
+    if (!existsUser) {
+      throw new HttpError(404, 'Usuário não encontrado.')
+    }
+
+    if (!req.user || typeof req.user !== "object" || !("id" in req.user)) {
+      throw new HttpError(401, "Usuário não autenticado.");
+    }
+
+    const user = req.user as JwtPayload & { id: number; role: string };
+    if (+user.id !== userId && user.role !== "admin") {
+      throw new HttpError(403, "Acesso negado.");
+    }
+
+    const coupons = await Coupon.getCouponUsageByUserId(userId)
+    res.json(coupons)
+    
+  } catch (error) {
+    next(error)
+  }
+}
+
+
+export { allCoupons, createCoupon, couponUsage };
