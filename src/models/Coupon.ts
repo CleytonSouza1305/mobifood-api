@@ -86,4 +86,12 @@ export class Coupon {
     }));
     return coupons;
   };
+
+  static validadeCouponCode = async (code: string) => {
+    const coupons = await prisma.coupons.findUnique({
+      where: { code }
+    })
+
+    return coupons
+  }
 }

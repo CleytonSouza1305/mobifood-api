@@ -170,7 +170,7 @@ const couponUsage: Handler = async (req, res, next) => {
     }
 
     const user = req.user as JwtPayload & { id: number; role: string };
-    if (+user.id !== userId && user.role !== "admin") {
+    if (+user.id !== existsUser.id && user.role !== "admin") {
       throw new HttpError(403, "Acesso negado.");
     }
 
@@ -182,5 +182,21 @@ const couponUsage: Handler = async (req, res, next) => {
   }
 }
 
+// GET api/coupons/:code
+const validateCoupon: Handler = async (req, res, next) => {
+  try {
+    const code = req.params.code
+    const isValidCoupon = await Coupon.validadeCouponCode(code)
 
-export { allCoupons, createCoupon, couponUsage };
+    if (!isValidCoupon) {
+      throw new HttpError(404, 'Cupon inválido.')
+    }
+
+    res.json(isValidCoupon)
+  } catch (error) {
+    next(error)
+  }
+}
+
+
+export { allCoupons, createCoupon, couponUsage, validateCoupon };
