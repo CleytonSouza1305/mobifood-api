@@ -74,7 +74,7 @@ const createCoupon: Handler = async (req, res, next) => {
       throw new HttpError(403, "User not authorized.");
     }
 
-    const isRandom = req.query.random === 'true'
+    const isRandom = req.query.random === "true";
     let newCoupon;
 
     if (!isRandom) {
@@ -102,7 +102,7 @@ const createCoupon: Handler = async (req, res, next) => {
       const body = CreateRandomCouponSchema.parse(req.body);
 
       const coupon = await generateCoupon(false, body.startsAt, body.expiresAt);
-      newCoupon = await Coupon.create(coupon)
+      newCoupon = await Coupon.create(coupon);
     }
 
     res.status(200).json(newCoupon);
@@ -155,14 +155,14 @@ const createCoupon: Handler = async (req, res, next) => {
   }
 };
 
-// GET api/coupons/usage/id
+// GET api/coupons/usage/:userId
 const couponUsage: Handler = async (req, res, next) => {
   try {
-    const userId = Number(req.params.id)
+    const userId = Number(req.params.userId);
 
-    const existsUser = await User.findById(userId)
+    const existsUser = await User.findById(userId);
     if (!existsUser) {
-      throw new HttpError(404, 'Usuário não encontrado.')
+      throw new HttpError(404, "Usuário não encontrado.");
     }
 
     if (!req.user || typeof req.user !== "object" || !("id" in req.user)) {
@@ -174,29 +174,56 @@ const couponUsage: Handler = async (req, res, next) => {
       throw new HttpError(403, "Acesso negado.");
     }
 
-    const coupons = await Coupon.getCouponUsageByUserId(userId)
-    res.json(coupons)
-    
+    const coupons = await Coupon.getCouponUsageByUserId(userId);
+    res.json(coupons);
   } catch (error) {
-    next(error)
+    next(error);
   }
-}
+};
 
 // GET api/coupons/:code
 const validateCoupon: Handler = async (req, res, next) => {
   try {
-    const code = req.params.code
-    const isValidCoupon = await Coupon.validadeCouponCode(code)
+    const code = req.params.code;
+    const isValidCoupon = await Coupon.validadeCouponCode(code);
 
     if (!isValidCoupon) {
-      throw new HttpError(404, 'Cupon inválido.')
+      throw new HttpError(404, "Cupom inválido.");
     }
 
-    res.json(isValidCoupon)
-  } catch (error) {
-    next(error)
-  }
-}
+    const actualDate = new Date();
 
+    if (isValidCoupon.expiresAt && new Date(isValidCoupon.expiresAt) < actualDate) {
+      throw new HttpError(400, "Este cupom já está expirado.");
+    }
+
+    if (isValidCoupon.startsAt && new Date(isValidCoupon.startsAt) > actualDate) {
+      throw new HttpError(400, "Este cupom ainda não está ativo.");
+    }
+
+    if (isValidCoupon.usageLimit !== null && isValidCoupon.usageLimit < 1) {
+      throw new HttpError(400, "Este cupom esgotou o limite de usos.");
+    }
+
+    if (!req.user || typeof req.user !== "object" || !("id" in req.user)) {
+      throw new HttpError(401, "Usuário não autenticado.");
+    }
+
+    const user = req.user as JwtPayload & { id: number; role: string };
+    
+    if (isValidCoupon.userUsageLimit) {
+      const userUsageHistory = await Coupon.getCouponUsageByUserId(Number(user.id));
+      const timesUsed = userUsageHistory.filter((c) => c.id === isValidCoupon.id).length;
+
+      if (timesUsed >= isValidCoupon.userUsageLimit) {
+        throw new HttpError(400, `Você atingiu o limite de ${isValidCoupon.userUsageLimit} uso(s) deste cupom.`);
+      }
+    }
+
+    res.json(isValidCoupon);
+  } catch (error) {
+    next(error);
+  }
+};
 
 export { allCoupons, createCoupon, couponUsage, validateCoupon };
