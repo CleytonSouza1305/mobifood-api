@@ -81,17 +81,46 @@ export class Coupon {
     });
 
     const coupons = couponsUsaged.map((c) => ({
-      ...c.coupon, 
-      usage_at: c.createdAt, 
+      ...c.coupon,
+      usage_at: c.createdAt,
     }));
     return coupons;
   };
 
   static validadeCouponCode = async (code: string) => {
     const coupons = await prisma.coupons.findUnique({
-      where: { code }
+      where: { code },
+    });
+
+    return coupons;
+  };
+
+  static getCouponAvailable = async (filter: CouponsFilter) => {
+    const coupons = await prisma.coupons.findMany({
+      where: filter.where,
+      orderBy: {
+        [filter.sortBy]: filter.order,
+      },
+      skip: (filter.page - 1) * filter.pageSize,
+      take: filter.pageSize,
+    });
+
+    const count = await prisma.coupons.count({ where: filter.where });
+    const actualDate = new Date()
+
+    const avaliableCoupons = coupons.filter((c) => {
+      if (!c.expiresAt) {
+        return true
+      } 
+
+      return new Date(c.expiresAt) >= actualDate
     })
 
-    return coupons
-  }
+    return {
+      coupons: avaliableCoupons,
+      page: filter.page,
+      pageSize: filter.pageSize,
+      count,
+    };
+  };
 }
