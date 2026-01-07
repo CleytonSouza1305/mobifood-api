@@ -27,9 +27,10 @@ model User {
   comments       Comments[]
   cart           Cart?
 
-  coupons UsageCoupon[]
-  createdAt      DateTime         @default(now())
-  updatedAt      DateTime         @updatedAt
+  coupons   UsageCoupon[]
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  orders    Order[]
 }
 
 enum UserRole {
@@ -120,6 +121,7 @@ model Products {
   description  String          @db.Text
   imageUrl     String?         @db.Text
   cartItems    CartItem[]
+  orderItems   OrderItem[]
 }
 
 enum ProductCategory {
@@ -175,20 +177,19 @@ model CartItem {
 }
 
 model Coupons {
-  id Int @id @default(autoincrement())
-  code String @unique @db.VarChar(255)
-  couponName String @db.VarChar(255)
-  description String @db.Text
-  discountType discountTypeEnum @default(FIXED)
-  discountValue Decimal @db.Decimal(10,2)
-  usageLimit Int?
-  userUsageLimit Int @default(1)
-  startsAt DateTime?
-  expiresAt DateTime?
-  is_active Boolean @default(true)
-  createdAt DateTime @default(now())
-  usages UsageCoupon[]
-  
+  id             Int              @id @default(autoincrement())
+  code           String           @unique @db.VarChar(255)
+  couponName     String           @db.VarChar(255)
+  description    String           @db.Text
+  discountType   discountTypeEnum @default(FIXED)
+  discountValue  Decimal          @db.Decimal(10, 2)
+  usageLimit     Int?
+  userUsageLimit Int              @default(1)
+  startsAt       DateTime?
+  expiresAt      DateTime?
+  is_active      Boolean          @default(true)
+  createdAt      DateTime         @default(now())
+  usages         UsageCoupon[]
 }
 
 enum discountTypeEnum {
@@ -200,10 +201,10 @@ enum discountTypeEnum {
 model UsageCoupon {
   id Int @id @default(autoincrement())
 
-  userId Int
+  userId   Int
   couponId Int
 
-  user User @relation(fields: [userId], references: [id])
+  user   User    @relation(fields: [userId], references: [id])
   coupon Coupons @relation(fields: [couponId], references: [id])
 
   createdAt DateTime @default(now())
@@ -211,3 +212,35 @@ model UsageCoupon {
   @@unique([userId, couponId])
 }
 
+model Order {
+  id               Int         @id @default(autoincrement())
+  userId           Int
+  user             User        @relation(fields: [userId], references: [id])
+  totalOriginal   Decimal     @db.Decimal(10, 2)
+  totalDiscounted Decimal     @db.Decimal(10, 2)
+  deliveryFee     Decimal     @default(0) @db.Decimal(10, 2)
+  deliveryAddress String      @db.Text
+  paymentMethod   String      @db.VarChar(50)
+  status           OrderStatus @default(PLACED)
+  createdAt       DateTime    @default(now())
+  items OrderItem[]
+}
+
+enum OrderStatus {
+  PLACED
+  CONFIRMED
+  PREPARING
+  OUT_FOR_DELIVERY
+  DELIVERED
+  CANCELLED
+}
+
+model OrderItem {
+  id           Int      @id @default(autoincrement())
+  orderId      Int
+  order        Order    @relation(fields: [orderId], references: [id])
+  productId    Int
+  product Products @relation(fields: [productId], references: [id])
+  quantity     Int      @default(1)
+  priceAtOrder Decimal  @db.Decimal(10, 2) 
+}
