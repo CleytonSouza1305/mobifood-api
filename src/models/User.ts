@@ -71,6 +71,20 @@ export class User {
             },
           },
         },
+        orders: {
+          include: {
+            items: {
+              include: {
+                item: {
+                  select: {
+                    name: true,
+                    imageUrl: true
+                  }
+                }
+              }
+            }
+          }
+        }
       },
     });
 
