@@ -58,19 +58,10 @@ userRouter.post("/reverse-geocoding", async (req, res, next) => {
 
     const response = await fetch(url);
     const data = await response.json();
-    console.log(data)
 
-    if (data.status === "OK") {
-      console.log(data);
-      const formattedAddress = data.results[0].formatted_address;
+    if (data.status !== "OK") throw new HttpError(404, 'Endereço não encontrado.')
 
-      res.json({
-        display_name: formattedAddress,
-        details: data.results[0].address_components,
-      });
-    } else {
-      throw new HttpError(404, "Erro ao buscar endereço pelo google maps.");
-    }
+    res.json({ location: data.results[0].formatted_address })
   } catch (error) {
     next(error);
   }
