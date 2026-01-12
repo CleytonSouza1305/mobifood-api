@@ -8,6 +8,7 @@ import restaurantRouters from './routers/restaurant-router'
 import cartRouter from './routers/cart-router'
 import { runWeeklyCouponAutomation } from './utils/generateWeeklyCoupons';
 import couponRouter from './routers/coupon-router';
+import orderRouter from './routers/order-router';
 
 dotenv.config()
 
@@ -19,6 +20,7 @@ app.use('/auth', userRouter)
 app.use('/api', restaurantRouters)
 app.use('/api', cartRouter)
 app.use('/api', couponRouter)
+app.use('/api', orderRouter)
 app.use(errorHandler)
 
 const PORT = process.env.PORT || 1000
