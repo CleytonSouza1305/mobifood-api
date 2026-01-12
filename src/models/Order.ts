@@ -19,5 +19,6 @@ export class Order {
 
   static ordersByUserId = async (userId: number) => {
     const orders = await prisma.order.findMany({ where: { userId} })
+    return orders
   }
 }
