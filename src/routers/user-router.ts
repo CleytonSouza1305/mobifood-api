@@ -1,3 +1,5 @@
+import { config } from 'dotenv'
+config()
 import express from "express";
 
 const userRouter = express.Router();
@@ -49,7 +51,7 @@ userRouter.post("/reverse-geocoding", async (req, res, next) => {
     const { latitude, longitude } = req.body;
     const GOOGLE_API_KEY = process.env.GOOGLE_MAPS_API_KEY;
     if (!GOOGLE_API_KEY) {
-      throw new HttpError(400, 'Google maps api is undefined')
+      throw new HttpError(400, 'Google Maps API key is not defined')
     }
 
     const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${GOOGLE_API_KEY}`;
@@ -67,7 +69,7 @@ userRouter.post("/reverse-geocoding", async (req, res, next) => {
         details: data.results[0].address_components,
       });
     } else {
-      throw new HttpError(404, "Google não encontrou o endereço.");
+      throw new HttpError(404, "Erro ao buscar endereço pelo google maps.");
     }
   } catch (error) {
     next(error);
