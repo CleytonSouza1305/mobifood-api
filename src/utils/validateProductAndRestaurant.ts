@@ -47,4 +47,4 @@ async function validateProductAndRestaurant(
   return true
 }
 
-export { validateProductAndRestaurant };
+export { validateProductAndRestaurant, getHour, isRestaurantOpen };
