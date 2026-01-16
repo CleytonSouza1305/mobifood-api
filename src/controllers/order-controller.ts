@@ -51,18 +51,12 @@ const createOrder: Handler = async (req, res, next) => {
       throw new HttpError(400, "Carrinho vazio ou não encontrado.");
     }
 
-    const allRestaurants = await Promise.all(
-      cart.items.map(async (i) => {
-        const restaurant = await Restaurant.onlyRestaurant(
-          Number(i.item.restaurantId)
-        );
-        if (!restaurant) {
-          throw new HttpError(
-            404,
-            "Erro ao buscar restaurante, tente novamente mais tarde"
-          );
-        }
+    const uniqueRestaurantIds = [...new Set(cart.items.map(i => Number(i.item.restaurantId)))];
 
+    const allRestaurants = await Promise.all(
+      uniqueRestaurantIds.map(async (id) => {
+        const restaurant = await Restaurant.onlyRestaurant(id);
+        if (!restaurant) throw new HttpError(404, "Restaurante não encontrado.");
         return restaurant;
       })
     );
@@ -109,7 +103,7 @@ const createOrder: Handler = async (req, res, next) => {
       paymentMethod: body.paymentMethod,
       userId: user.id,
       totalOriginal: totalOriginal,
-      totalDiscounted: totalDiscounted,
+      totalDiscounted: totalDiscounted + deliveryFee,
       deliveryFee: deliveryFee,
     };
 
