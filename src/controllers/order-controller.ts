@@ -72,8 +72,8 @@ const createOrder: Handler = async (req, res, next) => {
     });
 
     if (closedRestaurants && closedRestaurants.length > 0) {
-      const names = [...new Set(closedRestaurants.map(r => r.name))].join(", ")
-      throw new HttpError(400, `Pedido cancelado. Os seguintes restaurantes estão fechados agora: ${names}`);
+      const names = [...new Set(closedRestaurants.map(r => r.name))].join(", \n")
+      throw new HttpError(400, `Pedido cancelado.\n Os seguintes restaurantes estão fechados agora: ${names}`);
     }
 
     let totalOriginal = cart.total;
