@@ -123,4 +123,13 @@ export class Coupon {
       count,
     };
   };
+
+  static turnCouponUsaged = async (userId: number, couponId: number) => {
+    await prisma.usageCoupon.create({
+      data: {
+        couponId,
+        userId
+      }
+    })
+  }
 }
