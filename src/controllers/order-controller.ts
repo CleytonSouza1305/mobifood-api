@@ -87,6 +87,10 @@ const createOrder: Handler = async (req, res, next) => {
         throw new HttpError(404, "Cupom inválido ou expirado.");
       }
 
+      
+
+      await Coupon.turnCouponUsaged(user.id, isValidCoupon.id)
+
       const discountPrice = calculateDiscount(
         cart.total,
         isValidCoupon.discountType,
