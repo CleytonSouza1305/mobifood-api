@@ -157,7 +157,7 @@ const createCoupon: Handler = async (req, res, next) => {
       newCoupon = await Coupon.create(coupon);
     }
 
-    res.status(200).json(newCoupon);
+    res.status(201).json(newCoupon);
   } catch (error) {
     if (error instanceof ZodError) {
       const errorFields = error.issues.map((el) => el.path.join("."));
