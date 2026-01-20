@@ -106,9 +106,9 @@ const createOrder: Handler = async (req, res, next) => {
       deliveryAddress: body.deliveryAddress,
       paymentMethod: body.paymentMethod,
       userId: user.id,
-      totalOriginal: totalOriginal,
-      totalDiscounted: totalDiscounted + deliveryFee,
-      deliveryFee: deliveryFee,
+      totalOriginal: +totalOriginal,
+      totalDiscounted: +totalDiscounted + deliveryFee,
+      deliveryFee: +deliveryFee
     };
 
     const newOrder = await Order.createOrder(data, cart.items);

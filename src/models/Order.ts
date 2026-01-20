@@ -1,6 +1,6 @@
-import { promises } from "dns";
 import { prisma } from "../database";
 import { ProductCategory } from "../generated/prisma";
+import { customAlphabet, nanoid } from 'nanoid'
 
 type EnumStatus =
   | "PLACED"
@@ -37,16 +37,42 @@ export interface cartItemArr {
   };
 }
 
+
+async function generateUniqueDisplayId() {
+  let isUnique = false;
+  let code = '';
+
+  const customWorld = '23456789ABCDEFGHJKMNOPQRSTUVWXYZ';
+  const nanoid = customAlphabet(customWorld, 6)
+
+  while (!isUnique) {
+    code = nanoid(); 
+    
+    const existingOrder = await prisma.order.findUnique({
+      where: { orderNumber: code }, 
+      select: { id: true } 
+    });
+
+    if (!existingOrder) {
+      isUnique = true;
+    }
+  }
+
+  return code;
+}
+
 export class Order {
   static createOrder = async (
     data: CreateOrderInterface,
     cartProducts: cartItemArr[]
   ) => {
     const { userId, ...orderData } = data;
+    const uniqueOrderNumber = await generateUniqueDisplayId()
 
     const newOrder = await prisma.order.create({
       data: {
         ...orderData,
+        orderNumber: `#${uniqueOrderNumber}`,
         user: {
           connect: { id: userId },
         },
