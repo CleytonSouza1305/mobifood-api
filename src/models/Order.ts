@@ -96,7 +96,21 @@ export class Order {
   };
 
   static ordersByUserId = async (userId: number) => {
-    const orders = await prisma.order.findMany({ where: { userId } });
+    const orders = await prisma.order.findMany({ 
+      where: { 
+        userId 
+      },
+      select: {
+        createdAt: true,
+        deliveryAddress: true,
+        orderNumber: true,
+        deliveryFee: true,
+        status: true,
+        paymentMethod: true,
+        totalDiscounted: true,
+        totalOriginal: true
+      }
+    });
     return orders;
   };
 }
