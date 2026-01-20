@@ -208,8 +208,6 @@ model UsageCoupon {
   coupon Coupons @relation(fields: [couponId], references: [id])
 
   createdAt DateTime @default(now())
-
-  @@unique([userId, couponId])
 }
 
 model Order {
