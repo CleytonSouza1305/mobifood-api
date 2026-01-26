@@ -27,8 +27,6 @@ async function validateProductAndRestaurant(
     },
   });
 
-  console.log(product)
-
   if (!product) throw new HttpError(404, "Product not found.");
 
   const restaurant = product.restaurant;

@@ -5,6 +5,7 @@ import { JwtPayload } from "jsonwebtoken";
 import { AddItemToCartRequest } from "../schema/CartRequest";
 import { ZodError } from "zod";
 import { validateProductAndRestaurant } from "../utils/validateProductAndRestaurant";
+import { prisma } from "../database";
 
 // GET /api/cart
 const getCart: Handler = async (req, res, next) => {
@@ -49,6 +50,16 @@ const addItemToCart: Handler = async (req, res, next) => {
 
     if (user.id !== cart.userId && user.role !== "admin") {
       throw new HttpError(403, "User not authorized.");
+    }  
+
+    const product = await prisma.products.findUnique({ where: { id: body.itemId }})
+
+    if (!product) throw new HttpError(404, 'Produto não encontrado.')
+
+    const existsRestaurantInCart = cart.items.filter((i) => i.item.restaurantId !== product.restaurantId)
+
+    if (existsRestaurantInCart && existsRestaurantInCart.length > 0) {
+      throw new HttpError(400, 'Erro ao tentar adicionar item de outro restaurante no carrinho.')
     }
 
     const isValidInsert = await validateProductAndRestaurant(body.itemId);
@@ -56,7 +67,7 @@ const addItemToCart: Handler = async (req, res, next) => {
       await Cart.addItemToCart(user.cart.id, body.itemId, body.quantity);
     }
 
-    res.status(201).json({ message: 'OK' });
+    res.status(201).json({ message: 'Item adicionado ao carrinho com sucesso!' });
   } catch (error) {
     if (error instanceof ZodError) {
       const errorFIeld = error.issues.map((el) => el.path.join(".")).join(", ");
