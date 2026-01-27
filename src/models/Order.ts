@@ -113,4 +113,17 @@ export class Order {
     });
     return orders;
   };
+
+  static onlyOrder = async (orderId: number) => {
+    return await prisma.order.findUnique({ 
+      where: { id: orderId },
+      include: {
+        items: {
+          include: {
+            item: { select: { name: true, imageUrl: true }}
+          }
+        }
+      }
+    })
+  }
 }

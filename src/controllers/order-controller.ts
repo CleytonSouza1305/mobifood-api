@@ -8,7 +8,11 @@ import { Cart } from "../models/Cart";
 import { Coupon } from "../models/Coupon";
 import calculateDiscount from "../utils/calculateDiscount";
 import { Restaurant } from "../models/Restaurant";
-import { getHour, isRestaurantOpen } from "../utils/validateProductAndRestaurant";
+import {
+  getHour,
+  isRestaurantOpen,
+} from "../utils/validateProductAndRestaurant";
+import { JwtPayload } from "jsonwebtoken";
 
 // /api/order/user/:id
 const ordersByUserId: Handler = async (req, res, next) => {
@@ -51,29 +55,35 @@ const createOrder: Handler = async (req, res, next) => {
       throw new HttpError(400, "Carrinho vazio ou não encontrado.");
     }
 
-    const uniqueRestaurantIds = [...new Set(cart.items.map(i => Number(i.item.restaurantId)))];
+    const uniqueRestaurantIds = [
+      ...new Set(cart.items.map((i) => Number(i.item.restaurantId))),
+    ];
 
     const allRestaurants = await Promise.all(
       uniqueRestaurantIds.map(async (id) => {
         const restaurant = await Restaurant.onlyRestaurant(id);
-        if (!restaurant) throw new HttpError(404, "Restaurante não encontrado.");
+        if (!restaurant)
+          throw new HttpError(404, "Restaurante não encontrado.");
         return restaurant;
-      })
+      }),
     );
 
     const closedRestaurants = allRestaurants.filter((r) => {
-      if (
-          !isRestaurantOpen(getHour(r.openAt), getHour(r.closeAt))
-        ) {
-          return true
-        } else {
-          return false
-        }
+      if (!isRestaurantOpen(getHour(r.openAt), getHour(r.closeAt))) {
+        return true;
+      } else {
+        return false;
+      }
     });
 
     if (closedRestaurants && closedRestaurants.length > 0) {
-      const names = [...new Set(closedRestaurants.map(r => r.name))].join(", \n")
-      throw new HttpError(400, `Pedido cancelado.\n Os seguintes restaurantes estão fechados agora:\n\n ${names}`);
+      const names = [...new Set(closedRestaurants.map((r) => r.name))].join(
+        ", \n",
+      );
+      throw new HttpError(
+        400,
+        `Pedido cancelado.\n Os seguintes restaurantes estão fechados agora:\n\n ${names}`,
+      );
     }
 
     let totalOriginal = cart.total;
@@ -87,14 +97,12 @@ const createOrder: Handler = async (req, res, next) => {
         throw new HttpError(404, "Cupom inválido ou expirado.");
       }
 
-      
-
-      await Coupon.turnCouponUsaged(user.id, isValidCoupon.id)
+      await Coupon.turnCouponUsaged(user.id, isValidCoupon.id);
 
       const discountPrice = calculateDiscount(
         cart.total,
         isValidCoupon.discountType,
-        isValidCoupon.discountValue
+        isValidCoupon.discountValue,
       );
 
       totalDiscounted = Number(discountPrice);
@@ -108,7 +116,7 @@ const createOrder: Handler = async (req, res, next) => {
       userId: user.id,
       totalOriginal: +totalOriginal,
       totalDiscounted: +totalDiscounted + deliveryFee,
-      deliveryFee: +deliveryFee
+      deliveryFee: +deliveryFee,
     };
 
     const newOrder = await Order.createOrder(data, cart.items);
@@ -130,4 +138,27 @@ const createOrder: Handler = async (req, res, next) => {
   }
 };
 
-export { ordersByUserId, createOrder };
+// GET /api/order/:id
+const orderById: Handler = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    const order = await Order.onlyOrder(+id);
+
+    if (!req.user || typeof req.user !== "object" || !("id" in req.user)) {
+      throw new HttpError(401, "Usuário não autenticado.");
+    }
+
+    const user = req.user as JwtPayload & { id: number; role: string };
+    if (order?.userId !== user.id && user.role !== "admin") {
+      throw new HttpError(403, "User not authorized.");
+    }
+
+    if (!order) throw new HttpError(404, "Order não encontrada.");
+    res.json(order);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export { ordersByUserId, createOrder, orderById };
