@@ -138,12 +138,12 @@ const createOrder: Handler = async (req, res, next) => {
   }
 };
 
-// GET /api/order/:id
-const orderById: Handler = async (req, res, next) => {
+// GET /api/order/:orderNumber
+const orderByNumber: Handler = async (req, res, next) => {
   try {
-    const { id } = req.params;
+    const { orderNumber } = req.params;
 
-    const order = await Order.onlyOrder(+id);
+    const order = await Order.onlyOrderByOrderNumber('#' + orderNumber);
 
     if (!req.user || typeof req.user !== "object" || !("id" in req.user)) {
       throw new HttpError(401, "Usuário não autenticado.");
@@ -161,4 +161,4 @@ const orderById: Handler = async (req, res, next) => {
   }
 };
 
-export { ordersByUserId, createOrder, orderById };
+export { ordersByUserId, createOrder, orderByNumber };
