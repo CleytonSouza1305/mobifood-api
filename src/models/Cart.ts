@@ -18,10 +18,10 @@ export class Cart {
   static addItemToCart = async (
     cartId: number,
     itemId: number,
-    quantity: number
+    quantity: number,
   ) => {
     const product = await prisma.products.findUnique({ where: { id: itemId } });
-    if (!product) return
+    if (!product) return;
 
     const cart = await prisma.cart.findUnique({
       where: { id: cartId },
@@ -59,7 +59,7 @@ export class Cart {
 
     const total = updatedCart?.items.reduce(
       (acc, item) => acc + (item.subTotal ?? 0),
-      0
+      0,
     );
 
     await prisma.cart.update({
@@ -82,7 +82,7 @@ export class Cart {
   static updateItemCart = async (
     cartId: number,
     itemId: number,
-    quantity: number
+    quantity: number,
   ) => {
     const product = await prisma.products.findUnique({
       where: { id: itemId },
@@ -133,7 +133,7 @@ export class Cart {
 
     const total = updatedCart!.items.reduce(
       (acc, item) => acc + (item.subTotal ?? 0),
-      0
+      0,
     );
 
     return await prisma.cart.update({
@@ -180,7 +180,7 @@ export class Cart {
 
     const total = updatedCart?.items.reduce(
       (acc, item) => acc + (item.subTotal ?? 0),
-      0
+      0,
     );
 
     return await prisma.cart.update({
@@ -190,6 +190,21 @@ export class Cart {
         items: {
           include: { item: true },
         },
+      },
+    });
+  };
+
+  static clearCart = async (cartId: number) => {
+    return await prisma.cart.update({
+      where: { id: cartId },
+      data: {
+        total: 0,
+        items: {
+          deleteMany: {}, 
+        },
+      },
+      include: {
+        items: true,
       },
     });
   };

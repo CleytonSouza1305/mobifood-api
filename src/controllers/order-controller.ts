@@ -120,6 +120,9 @@ const createOrder: Handler = async (req, res, next) => {
     };
 
     const newOrder = await Order.createOrder(data, cart.items);
+
+    await Cart.clearCart(cart.id)
+
     res.status(201).json(newOrder);
   } catch (error) {
     if (error instanceof ZodError) {
