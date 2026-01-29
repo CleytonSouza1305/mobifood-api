@@ -109,7 +109,8 @@ export class Order {
         paymentMethod: true,
         totalDiscounted: true,
         totalOriginal: true
-      }
+      },
+      orderBy: { createdAt: "desc" }
     });
     return orders;
   };
