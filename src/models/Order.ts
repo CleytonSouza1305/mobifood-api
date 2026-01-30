@@ -1,6 +1,6 @@
 import { prisma } from "../database";
 import { ProductCategory } from "../generated/prisma";
-import { customAlphabet, nanoid } from 'nanoid'
+import { customAlphabet, nanoid } from "nanoid";
 
 type EnumStatus =
   | "PLACED"
@@ -30,27 +30,26 @@ export interface cartItemArr {
     id: number;
     name: string;
     category: ProductCategory;
-    price: any; 
+    price: any;
     restaurantId: number;
     description: string;
     imageUrl: string | null;
   };
 }
 
-
 async function generateUniqueDisplayId() {
   let isUnique = false;
-  let code = '';
+  let code = "";
 
-  const customWorld = '23456789ABCDEFGHJKMNOPQRSTUVWXYZ';
-  const nanoid = customAlphabet(customWorld, 6)
+  const customWorld = "23456789ABCDEFGHJKMNOPQRSTUVWXYZ";
+  const nanoid = customAlphabet(customWorld, 6);
 
   while (!isUnique) {
-    code = nanoid(); 
-    
+    code = nanoid();
+
     const existingOrder = await prisma.order.findUnique({
-      where: { orderNumber: code }, 
-      select: { id: true } 
+      where: { orderNumber: code },
+      select: { id: true },
     });
 
     if (!existingOrder) {
@@ -64,14 +63,18 @@ async function generateUniqueDisplayId() {
 export class Order {
   static createOrder = async (
     data: CreateOrderInterface,
-    cartProducts: cartItemArr[]
+    cartProducts: cartItemArr[],
   ) => {
     const { userId, ...orderData } = data;
-    const uniqueOrderNumber = await generateUniqueDisplayId()
+    const uniqueOrderNumber = await generateUniqueDisplayId();
+
+    const expirationTime = new Date();
+    expirationTime.setMinutes(expirationTime.getMinutes() + 15);
 
     const newOrder = await prisma.order.create({
       data: {
         ...orderData,
+        expiresAt: expirationTime,
         orderNumber: `#${uniqueOrderNumber}`,
         user: {
           connect: { id: userId },
@@ -83,22 +86,32 @@ export class Order {
       cartProducts.map((product) =>
         prisma.orderItem.create({
           data: {
-            priceAtOrder: Number(product.item.price), 
+            priceAtOrder: Number(product.item.price),
             productId: product.item.id,
-            orderId: newOrder.id, 
+            orderId: newOrder.id,
             quantity: product.quantity,
           },
-        })
-      )
+        }),
+      ),
     );
 
     return newOrder;
   };
 
   static ordersByUserId = async (userId: number) => {
-    const orders = await prisma.order.findMany({ 
-      where: { 
-        userId 
+    await prisma.order.updateMany({
+      where: {
+        status: "PLACED",
+        expiresAt: { lt: new Date() }, 
+      },
+      data: {
+        status: "CANCELLED",
+      },
+    });
+    
+    const orders = await prisma.order.findMany({
+      where: {
+        userId,
       },
       select: {
         createdAt: true,
@@ -108,23 +121,25 @@ export class Order {
         status: true,
         paymentMethod: true,
         totalDiscounted: true,
-        totalOriginal: true
+        totalOriginal: true,
+        expiresAt: true,
       },
-      orderBy: { createdAt: "desc" }
+      orderBy: { createdAt: "desc" },
     });
+
     return orders;
   };
 
   static onlyOrderByOrderNumber = async (orderNumber: string) => {
-    return await prisma.order.findUnique({ 
+    return await prisma.order.findUnique({
       where: { orderNumber },
       include: {
         items: {
           include: {
-            item: { select: { name: true, imageUrl: true }}
-          }
-        }
-      }
-    })
-  }
+            item: { select: { name: true, imageUrl: true } },
+          },
+        },
+      },
+    });
+  };
 }
