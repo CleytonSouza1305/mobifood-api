@@ -223,6 +223,7 @@ model Order {
   orderNumber     String     @db.VarChar(20) @unique()
   createdAt       DateTime    @default(now())
   items           OrderItem[]
+  expiresAt  DateTime
 }
 
 enum OrderStatus {
