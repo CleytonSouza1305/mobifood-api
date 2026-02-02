@@ -101,7 +101,7 @@ const couponAvaliable: Handler = async (req, res, next) => {
     }
 
     if (is_active) {
-      const active = is_active ? true : false;
+      const active = is_active === "true" ? true : false;
       filter.where.is_active = {
         equals: active,
       };
