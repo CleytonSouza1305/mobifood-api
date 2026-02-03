@@ -1,7 +1,7 @@
 import { Handler } from "express";
 import { User } from "../models/User";
 import { HttpError } from "../error/HttpError";
-import { Order } from "../models/Order";
+import { Order, orderFilter, statusType } from "../models/Order";
 import { CreateOrderRequestSchema } from "../schema/OrderRequest";
 import { ZodError } from "zod";
 import { Cart } from "../models/Cart";
@@ -17,6 +17,14 @@ import { JwtPayload } from "jsonwebtoken";
 // /api/order/user/:id
 const ordersByUserId: Handler = async (req, res, next) => {
   try {
+    const {
+      pageNumber = 1,
+      pageSizeNumber = 10,
+      sortBy = "createdAt",
+      order = "asc",
+      status = "PLACED",
+    } = req.query;
+
     const userId = Number(req.params.id);
 
     const existsUser = await User.findById(userId);
@@ -30,7 +38,37 @@ const ordersByUserId: Handler = async (req, res, next) => {
       throw new HttpError(403, "Busca inválida, você não tem permissão.");
     }
 
-    const orders = await Order.ordersByUserId(userId);
+    const validStatus: statusType[] = [
+      "PLACED",
+      "CONFIRMED",
+      "PREPARING",
+      "OUT_FOR_DELIVERY",
+      "DELIVERED",
+      "CANCELLED",
+    ];
+
+    const statusStr = String(status);
+
+    if (!validStatus.includes(statusStr as statusType)) {
+      throw new HttpError(400, "Status para query inválido.");
+    }
+
+    const finalStatus = statusStr as statusType;
+
+    const filter: orderFilter = {
+      sortBy: String(sortBy),
+      order: order === "desc" ? "desc" : "asc",
+      page: Number(pageNumber),
+      pageSize: Number(pageSizeNumber),
+      where: {
+        userId: Number(req.user.id), 
+        status: {
+          equals: finalStatus,
+        },
+      },
+    };
+
+    const orders = await Order.ordersByUserId(filter);
     res.json(orders);
   } catch (error) {
     next(error);
@@ -121,7 +159,7 @@ const createOrder: Handler = async (req, res, next) => {
 
     const newOrder = await Order.createOrder(data, cart.items);
 
-    await Cart.clearCart(cart.id)
+    await Cart.clearCart(cart.id);
 
     res.status(201).json(newOrder);
   } catch (error) {
@@ -146,7 +184,7 @@ const orderByNumber: Handler = async (req, res, next) => {
   try {
     const { orderNumber } = req.params;
 
-    const order = await Order.onlyOrderByOrderNumber('#' + orderNumber);
+    const order = await Order.onlyOrderByOrderNumber("#" + orderNumber);
 
     if (!req.user || typeof req.user !== "object" || !("id" in req.user)) {
       throw new HttpError(401, "Usuário não autenticado.");

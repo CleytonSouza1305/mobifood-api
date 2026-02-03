@@ -37,6 +37,25 @@ export interface cartItemArr {
   };
 }
 
+export type statusType =
+  | "PLACED"
+  | "CONFIRMED"
+  | "PREPARING"
+  | "OUT_FOR_DELIVERY"
+  | "DELIVERED"
+  | "CANCELLED";
+
+export interface orderFilter {
+  sortBy: string;
+  page: number;
+  pageSize: number;
+  where: {
+    userId: number;
+    status: { equals: statusType };
+  };
+  order: "asc" | "desc";
+}
+
 async function generateUniqueDisplayId() {
   let isUnique = false;
   let code = "";
@@ -98,36 +117,53 @@ export class Order {
     return newOrder;
   };
 
-  static ordersByUserId = async (userId: number) => {
+  static ordersByUserId = async (filter: orderFilter) => {
     await prisma.order.updateMany({
       where: {
         status: "PLACED",
-        expiresAt: { lt: new Date() }, 
+        expiresAt: { lt: new Date() },
       },
       data: {
         status: "CANCELLED",
       },
     });
-    
-    const orders = await prisma.order.findMany({
-      where: {
-        userId,
-      },
-      select: {
-        createdAt: true,
-        deliveryAddress: true,
-        orderNumber: true,
-        deliveryFee: true,
-        status: true,
-        paymentMethod: true,
-        totalDiscounted: true,
-        totalOriginal: true,
-        expiresAt: true,
-      },
-      orderBy: { createdAt: "desc" },
-    });
 
-    return orders;
+    const [orders, count] = await prisma.$transaction([
+      prisma.order.findMany({
+        where: filter.where,
+        select: {
+          createdAt: true,
+          deliveryAddress: true,
+          orderNumber: true,
+          deliveryFee: true,
+          status: true,
+          paymentMethod: true,
+          totalDiscounted: true,
+          totalOriginal: true,
+          expiresAt: true,
+        },
+        orderBy: {
+          [filter.sortBy]: filter.order,
+        },
+        skip: (filter.page - 1) * filter.pageSize,
+        take: filter.pageSize,
+      }),
+      prisma.order.count({ 
+        skip: (filter.page - 1) * filter.pageSize,
+        take: filter.pageSize,
+        orderBy: {
+          [filter.sortBy]: filter.order,
+        },
+        where: filter.where
+      })
+    ]);
+
+    return {
+      orders,
+      count,
+      page: filter.page,
+      pageSize: filter.pageSize
+    };
   };
 
   static onlyOrderByOrderNumber = async (orderNumber: string) => {
