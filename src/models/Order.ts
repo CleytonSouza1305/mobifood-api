@@ -1,6 +1,6 @@
 import { prisma } from "../database";
 import { ProductCategory } from "../generated/prisma";
-import { customAlphabet } from "nanoid";
+import { customAlphabet, nanoid } from "nanoid";
 
 type EnumStatus =
   | "PLACED"
@@ -11,6 +11,16 @@ type EnumStatus =
   | "CANCELLED";
 
 export interface CreateOrderInterface {
+  userId: number;
+  totalOriginal: number;
+  totalDiscounted?: number;
+  deliveryFee?: number;
+  deliveryAddress: string;
+  paymentMethod: string;
+  status?: EnumStatus;
+}
+
+export interface UpdateOrderInterface {
   userId?: number;
   totalOriginal?: number;
   totalDiscounted?: number;
@@ -179,7 +189,7 @@ export class Order {
     });
   };
 
-  static updateOrder = async (orderNumber: string, data: CreateOrderInterface) => {
+  static updateOrder = async (orderNumber: string, data: UpdateOrderInterface) => {
     const updatedOrder = await prisma.order.update({
       where: { orderNumber },
       data
