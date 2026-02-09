@@ -21,6 +21,21 @@ async function main() {
           balance: 0.0,
         },
       },
+      cart: {},
+      address: {
+        createMany: {
+          data: {
+            city: 'São Paulo',
+            state: 'SP',
+            number: '457',
+            street: 'Rua bocaina de minas',
+            role: 'Casa',
+            isActive: true
+          }
+        }
+      },
+      favoriteTheme: 'dark',
+      phone: '(11) 12345-6789',
     },
   });
 
