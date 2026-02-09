@@ -84,6 +84,11 @@ export class User {
               }
             }
           }
+        },
+        courier: {
+          include: {
+            deliveries: true
+          }
         }
       },
     });
