@@ -13,6 +13,12 @@ import {
   isRestaurantOpen,
 } from "../utils/validateProductAndRestaurant";
 import { JwtPayload } from "jsonwebtoken";
+import { OrderStatus } from "../generated/prisma";
+
+interface OrderStep {
+  status: OrderStatus;
+  delay: number;
+}
 
 // /api/order/user/:id
 const ordersByUserId: Handler = async (req, res, next) => {
@@ -61,7 +67,7 @@ const ordersByUserId: Handler = async (req, res, next) => {
       page: Number(pageNumber),
       pageSize: Number(pageSizeNumber),
       where: {
-        userId: Number(req.user.id), 
+        userId: Number(req.user.id),
         status: {
           equals: finalStatus,
         },
@@ -202,4 +208,48 @@ const orderByNumber: Handler = async (req, res, next) => {
   }
 };
 
-export { ordersByUserId, createOrder, orderByNumber };
+const processPayment: Handler = async (req, res, next) => {
+  const { orderNumber, paymentMethod, cardDetails } = req.body;
+
+  try {
+    const isValidOrder = await Order.onlyOrderByOrderNumber(orderNumber);
+    if (!isValidOrder) {
+      throw new HttpError(404, "Order não encontrada.");
+    }
+
+    if (isValidOrder.status !== "PLACED") {
+      throw new HttpError(
+        400,
+        "Erro ao pagar order, indisponível para efetuar pagamento.",
+      );
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+
+    if (paymentMethod === "CREDIT_CARD") {
+      if (cardDetails.number.startsWith("404")) {
+        throw new HttpError(402, "Cartão recusado. Saldo insuficiente.");
+      }
+    }
+
+    await Order.updateOrder(orderNumber, { status: "CONFIRMED" });
+
+    const intervalDt: OrderStep[] = [
+      { status: "PREPARING", delay: 10000 },
+      { status: "OUT_FOR_DELIVERY", delay: 30000 },
+    ];
+
+    intervalDt.forEach((step) => {
+      setTimeout(async () => {
+        await Order.updateOrder(orderNumber, { status: step.status });
+        console.log(`Pedido ${orderNumber} com status alterado para ${step.status} com sucesso!`)
+      }, step.delay);
+    });
+
+    res.json({ success: true, message: "Pagamento aprovado!" });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export { ordersByUserId, createOrder, orderByNumber, processPayment };
