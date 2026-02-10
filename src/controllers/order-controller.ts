@@ -208,6 +208,7 @@ const orderByNumber: Handler = async (req, res, next) => {
   }
 };
 
+// POST /api/order/checkout
 const processPayment: Handler = async (req, res, next) => {
   const { orderNumber, paymentMethod, cardDetails } = req.body;
 
