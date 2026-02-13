@@ -66,25 +66,17 @@ enum AddressRole {
 
 model PaymentMethods {
   id        Int         @id @default(autoincrement())
-  method    PaymentType
-  isDefault Boolean     @default(false)
   userId    Int
   user      User        @relation(fields: [userId], references: [id])
+
+  method    PaymentType
+  isDefault Boolean      @default(false)
 
   cardDetails CardDetails[]
   pixDetails PixDetails[]
 
   createdAt DateTime    @default(now())
   updatedAt DateTime    @updatedAt
-
-  @@map("payment_methods")
-}
-
-enum PaymentType {
-  CREDIT_CARD
-  DEBIT_CARD
-  PIX
-  PAYPAL
 }
 
 model CardDetails {
@@ -98,6 +90,8 @@ model CardDetails {
   paymentId      Int
   paymentMethod  PaymentMethods @relation(fields: [paymentId], references: [id])
 
+  isDefault Boolean     @default(false)
+
   createdAt DateTime    @default(now())
   updatedAt DateTime    @updatedAt
 }
@@ -108,8 +102,16 @@ model PixDetails {
   paymentId      Int
   paymentMethod  PaymentMethods @relation(fields: [paymentId], references: [id])
 
+  isDefault Boolean     @default(false)
+
   keyType KeyType @default(RANDOMKEY)
   key String @db.VarChar(255)
+}
+
+enum PaymentType {
+  CREDIT_CARD
+  DEBIT_CARD
+  PIX
 }
 
 enum KeyType {
