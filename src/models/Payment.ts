@@ -1,16 +1,21 @@
 import { prisma } from "../database"
-import { PaymentType } from "../generated/prisma"
 
 interface paymentInterface {
-  id?: number,
-  method?: PaymentType,
-  isDefault?: boolean
+  id?: number
   userId?: number
 }
 
 export class Payment {
   static paymentByUserId = async (userId: number) => {
-    return await prisma.paymentMethods.findMany({ where: { userId }})
+    return await prisma.paymentMethods.findMany({ 
+      where: { 
+        userId 
+      },
+      include: {
+        pixDetails: {},
+        cardDetails: {}
+      }
+    })
   }
 
   static addNewPayment = async (userId: number, data: paymentInterface) => {
