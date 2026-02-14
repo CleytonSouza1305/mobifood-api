@@ -264,7 +264,8 @@ model Order {
   expiresAt  DateTime
 
   courierId Int?
-  courier Courier? @relation(fields: [courierId], references: [id])
+  courier        Courier? @relation("CourierDeliveries", fields: [courierId], references: [id])
+  currentCourier Courier? @relation("CurrentRoute")
 }
 
 enum OrderStatus {
@@ -297,14 +298,22 @@ model Courier {
 
   score Int @default(0)
 
-  isActive Boolean @default(false)
-  isBlocked Boolean @default(false)
-  isAvailable Boolean @default(false)
+  status CourierStatus @default(OFFLINE)
 
-  deliveries Order[]
+  deliveries    Order[]       @relation("CourierDeliveries")
 
   balance Decimal @db.Decimal(10, 2) @default(0)
 
+  isInRouterId Int? @unique
+  isInRouter    Order?        @relation("CurrentRoute", fields: [isInRouterId], references: [id])
+
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
+}
+
+enum CourierStatus {
+  OFFLINE
+  AVAILABLE
+  DELIVERING
+  SUSPENDED
 }
