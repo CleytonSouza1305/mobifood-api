@@ -1,8 +1,19 @@
 import { prisma } from "../database"
 
+export type MethodType = 'PIX' | 'CREDIT_CARD' | 'DEBIT_CARD'
+export type KeyType = 'EMAIL' | 'CPF' | 'PHONE' | 'RANDOMKEY'
+
 interface paymentInterface {
-  id?: number
-  userId?: number
+  userId: number,
+  method: MethodType,
+  isDefault?: boolean,
+  brand?: string,
+  nameOnCard?: string,
+  lastFourDigits?: string,
+  expiryMonth?: number,
+  expiryYear?: number,
+  keyType: KeyType,
+  key?: string
 }
 
 export class Payment {
@@ -36,7 +47,7 @@ export class Payment {
   });
 }
 
-  static addNewPayment = async (userId: number, data: paymentInterface) => {
-    
+  static addNewPayment = async (data: paymentInterface) => {
+    return await prisma.paymentMethods.create({ data }, )
   }
 }
