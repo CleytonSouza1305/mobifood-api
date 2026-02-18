@@ -72,40 +72,17 @@ model PaymentMethods {
   method    PaymentType
   isDefault Boolean      @default(false)
 
-  cardDetails CardDetails[]
-  pixDetails PixDetails[]
+  brand String? @db.VarChar(255)
+  nameOnCard String? @db.VarChar(100)
+  lastFourDigits String? @db.VarChar(100)
+  expiryMonth     Int?
+  expiryYear      Int?
+
+  keyType KeyType? @default(RANDOMKEY)
+  key String? @db.VarChar(255)
 
   createdAt DateTime    @default(now())
   updatedAt DateTime    @updatedAt
-}
-
-model CardDetails {
-  id Int @id @default(autoincrement())
-  brand String @db.VarChar(255)
-  nameOnCard String @db.VarChar(100)
-  lastFourDigits String @db.VarChar(100)
-  expiryMonth     Int
-  expiryYear      Int
-
-  paymentId      Int
-  paymentMethod  PaymentMethods @relation(fields: [paymentId], references: [id])
-
-  isDefault Boolean     @default(false)
-
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
-}
-
-model PixDetails {
-  id Int @id @default(autoincrement())
-
-  paymentId      Int
-  paymentMethod  PaymentMethods @relation(fields: [paymentId], references: [id])
-
-  isDefault Boolean     @default(false)
-
-  keyType KeyType @default(RANDOMKEY)
-  key String @db.VarChar(255)
 }
 
 enum PaymentType {
