@@ -7,19 +7,33 @@ Uma solução completa de delivery desenvolvida para fins de estudo, explorando 
 
 ## 🚀 Sobre o Projeto
 
-Este repositório faz parte de um estudo aprofundado sobre o ecossistema JavaScript/TypeScript. O objetivo é construir uma aplicação de delivery robusta, focando em desafios reais como gerenciamento de múltiplos métodos de pagamento, estados complexos no front-end e modelagem de dados eficiente.
+O MobiFood é uma plataforma full-stack de delivery em constante evolução, desenvolvida para explorar cenários complexos de e-commerce e logística. O projeto vai além do CRUD básico, implementando regras de negócio críticas baseadas em um modelo de dados relacional robusto.
+
+### 🏗️ Arquitetura de Dados & Desafios Técnicos
+
+A estrutura foi modelada no PostgreSQL via Prisma para suportar um ecossistema completo de food service:
+
+Gestão Híbrida de Pagamentos: Implementação de uma estrutura flexível para PaymentMethods que suporta fluxos distintos para PIX (com chaves dinâmicas) e Cartões (com metadados de bandeira e validade) em uma única entidade otimizada.
+
+Logística e Entregas (Courier System): O sistema conta com uma entidade Courier que gerencia o status do entregador em tempo real (AVAILABLE, DELIVERING), rastreamento via coordenadas geográficas (lat, lon) e um sistema de pontuação/score.
+
+Motor de Cupons e Descontos: Lógica de aplicação de descontos (FIXED, PERCENTAGE, DELIVERY) com controle de validade e limites de uso por usuário (UsageCoupon).
+
+Fluxo de Pedido (Order Lifecycle): Gerenciamento de ciclo de vida completo, desde o Cart (carrinho) e CartItem até a conversão em Order com múltiplos status (de PLACED a DELIVERED).
+
+Experiência Personalizada: Sistema de temas (FavoriteTheme), múltiplos endereços por usuário com categorias (Casa, Trabalho) e sistema de avaliações com ratings para restaurantes.
 
 ### 🛠 Tecnologias Utilizadas
 
 **Front-end:**
 * [React](https://reactjs.org/) + [Vite](https://vitejs.dev/)
 * [Tailwind CSS](https://tailwindcss.com/) (Estilização Utilitária)
-* [TypeScript](https://www.typescriptlang.org/)
 
 **Back-end:**
 * [Node.js](https://nodejs.org/)
 * [Prisma ORM](https://www.prisma.io/) (Modelagem e Banco de Dados)
 * [PostgreSQL](https://www.postgresql.org/)
+* [TypeScript](https://www.typescriptlang.org/)
 
 ---
 
